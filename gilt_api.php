@@ -7,7 +7,7 @@
  *  $sales = $gilt->getActiveSales();
  */
  
-require __DIR__."/lib/Resty.php";
+require_once __DIR__.'/lib/guzzle.phar';
  
 class Gilt {
 
@@ -22,51 +22,55 @@ class Gilt {
   const HOME  = 'home';
 
 	private $api_key;
-	private $resty;
+	private $rest_client;
 	
-  public function __construct($api_key, $resty = new Resty()) {
+  public function __construct($api_key, $rest_client = null) {
     $this->api_key = $api_key;
-    $this->resty = $resty;
-    $this->resty->setBaseURL('https://api.gilt.com/v1/');
+    if (empty($rest_client)) {
+    	$this->rest_client = new Guzzle\Service\Client('https://api.gilt.com/v1/');
+    } else {
+    	$this->rest_client = $rest_client;
+    }
   }
 
-  private buildPath($first, $last, $middle = null) {
+  private function buildPath($first, $last, $middle = null) {
     if (empty($middle)) {
       $path = $first.'/'.$last.'.json';
     } else {
       $path = $first.'/'.$middle.'/'.$last.'.json';
     }
+    $path = $path.'?apikey='.$this->api_key;
     return $path;
   }
   
-  private getGiltData($path) {
-    $json = $this->resty->get($path);
+  private function getGiltData($path) {
+    $json = $this->rest_client->get($path).getBody(true);
     return GiltData::fromJson($json);
   }
     
   private function getSales($sales_type, $store_key) {
-    $path = buildPath('sales', $sales_type, $store_key);
-    $gilt_data = getGiltData($path);
+    $path = $this->buildPath('sales', $sales_type, $store_key);
+    $gilt_data = $this->getGiltData($path);
     return new Sales($gilt_data);
   }
   
   public function getActiveSales($store_key = null) {
-    return $this->getSales('active', $store_key)
+    return $this->getSales('active', $store_key);
   }
   
   public function getUpcomingSales($store_key = null) {
-    return $this->getSales('upcoming', $store_key)
+    return $this->getSales('upcoming', $store_key);
   }
   
   public function getSale($store_key, $sale_key) {
-    $path = buildPath('sales', $sale_key, $store_key);
-    $gilt_data = getGiltData($path);
+    $path = $this->buildPath('sales', $sale_key, $store_key);
+    $gilt_data = $this->getGiltData($path);
     return new Sale($gilt_data);
   }
   
   public function getProduct($product_id) {
-    $path = buildPath('products', 'detail', $product_id);
-    $gilt_data = getGiltData($path);
+    $path = $this->buildPath('products', 'detail', $product_id);
+    $gilt_data = $this->getGiltData($path);
     return new Product($gilt_data);
   }
 }
@@ -98,7 +102,7 @@ class GiltData {
   
   public function getJson() {
     if (!isset($this->json)) {
-      $this->json = json_encode($this->object);
+      $this->json = json_encode($this->data);
     }
     return $this->json;
   }
@@ -180,17 +184,13 @@ class Sales extends GiltDataHolder {
   public function getSales() {
     if (!isset($this->sales)) {
       $this->sales = array();
-      for ($this->getData() as $data) {
+      foreach ($this->getData() as $data) {
         $gilt_data = GiltData::fromData($data);
         $this->sales[] = new Sale($gilt_data);
       }
     }
     return $this->sales;
   }
-  
-  public function getJson() {
-    return $this->getJson();
-  } 
 }
 
 class Sale extends GiltDataHolder {
@@ -199,7 +199,7 @@ class Sale extends GiltDataHolder {
    * Sale name
    * @var string
    */
-  public getName() {
+  public function getName() {
     return $this->getString('name');
   }
   
@@ -207,15 +207,15 @@ class Sale extends GiltDataHolder {
    * URL to single sale object
    * @var string
    */
-  public getSale() {
+  public function getSale() {
     return $this->getString('sale');
   }
   
   /**
-   * String 	unique identifier for sale
+   * unique identifier for sale
    * @var string
    */
-  public getSaleKey() {
+  public function getSaleKey() {
     return $this->getString('sale_key');
   }
   
@@ -223,7 +223,7 @@ class Sale extends GiltDataHolder {
    * Store key
    * @var string
    */
-  public getStore() {
+  public function getStore() {
     return $this->getString('store');
   }
   
@@ -231,7 +231,7 @@ class Sale extends GiltDataHolder {
    * A description of the sale's theme or brand (optional)
    * @var string
    */
-  public getDescription() {
+  public function getDescription() {
     return $this->getString('description');
   }
   
@@ -239,7 +239,7 @@ class Sale extends GiltDataHolder {
    * Permalink to sale website
    * @var string
    */
-  public getSaleUrl() {
+  public function getSaleUrl() {
     return $this->getString('sale_url');
   }
   
@@ -247,7 +247,7 @@ class Sale extends GiltDataHolder {
    * ISO8601-formatted time for beginning of sale
    * @var string
    */
-  public getBegins() {
+  public function getBegins() {
     return $this->getString('begins');
   }
   
@@ -255,7 +255,7 @@ class Sale extends GiltDataHolder {
    * ISO-8601-formatted time for end of sale (optional)
    * @var string
    */
-  public getEnds() {
+  public function getEnds() {
     return $this->getString('ends');
   }
   
@@ -263,7 +263,7 @@ class Sale extends GiltDataHolder {
    * See image URLs
    * @var array
    */
-  public getImageUrls() {
+  public function getImageUrls() {
     $data = $this->getArray('image_urls');
     $image_urls = array();
     foreach ($data as $key => $value) {
@@ -276,7 +276,7 @@ class Sale extends GiltDataHolder {
    * List of URLs to individual product objects (optional, active sales only)
    * @var array
    */
-  public getProducts() {
+  public function getProducts() {
     return $this->getArray('products');
   }
   
@@ -288,7 +288,7 @@ class Product extends GiltDataHolder {
    * Product name
    * @var string
    */
-  public getName() {
+  public function getName() {
     return $this->getString('name');
   }
   
@@ -296,7 +296,7 @@ class Product extends GiltDataHolder {
    * URL to product object
    * @var string
    */
-  public getProduct() {
+  public function getProduct() {
     return $this->getString('product');
   }
   
@@ -304,7 +304,7 @@ class Product extends GiltDataHolder {
    * Unique identifier for product
    * @var int
    */
-  public getId() {
+  public function getId() {
     return $this->getNumber('id');
   }
   
@@ -312,7 +312,7 @@ class Product extends GiltDataHolder {
    * Brand name
    * @var string
    */
-  public getBrand() {
+  public function getBrand() {
     return $this->getString('brand');
   }
   
@@ -320,7 +320,7 @@ class Product extends GiltDataHolder {
    * Link to product detail page where item can be purchased
    * @var string
    */
-  public getUrl() {
+  public function getUrl() {
     return $this->getString('url');
   }
   
@@ -328,7 +328,7 @@ class Product extends GiltDataHolder {
    * See Image URLs
    * @var array
    */
-  public getImageUrls() {
+  public function getImageUrls() {
     return $this->getArray('image_urls');
   }
   
@@ -336,10 +336,10 @@ class Product extends GiltDataHolder {
    * See SKUs
    * @var array
    */
-  public getSkus() {
+  public function getSkus() {
     $data = $this->getArray('skus');
     $skus = array();
-    for ($data as $value) {
+    foreach ($data as $value) {
     	$skus[] = new Sku(GiltData::fromData($value));
     }
     return $skus;
@@ -349,7 +349,7 @@ class Product extends GiltDataHolder {
    * An array containing following fields: description, fit_notes, material, care_instructions, origin
    * @var array
    */
-  public getContent() {
+  public function getContent() {
     return $this->getArray('content');
   }
   
@@ -357,7 +357,7 @@ class Product extends GiltDataHolder {
    * Product description (optional)
    * @var string
    */
-  public getDescription() {    
+  public function getDescription() {    
     return $this->getArrayString('content', 'description');
   }
 
@@ -365,7 +365,7 @@ class Product extends GiltDataHolder {
    * Sizing information (optional)
    * @var string
    */
-  public getFitNotes() {    
+  public function getFitNotes() {    
     return $this->getArrayString('content', 'fit_notes');
   }
 
@@ -373,7 +373,7 @@ class Product extends GiltDataHolder {
    * Materials list (optional)
    * @var string
    */
-  public getMaterial() {    
+  public function getMaterial() {    
     return $this->getArrayString('content', 'material');
   }
 
@@ -381,7 +381,7 @@ class Product extends GiltDataHolder {
    * Additional care information (optional)
    * @var string
    */
-  public getCareInstructions() {    
+  public function getCareInstructions() {    
     return $this->getArrayString('content', 'care_instructions');
   }
 
@@ -389,7 +389,7 @@ class Product extends GiltDataHolder {
    * Place of manufacture (optional)
    * @var string
    */
-  public getOrigin() {    
+  public function getOrigin() {    
     return $this->getArrayString('content', 'origin');
   }
 
@@ -401,7 +401,7 @@ class ImageUrl extends GiltDataHolder {
    * The URL to the image
    * @var string
    */
-  public getUrl() {    
+  public function getUrl() {    
     return $this->getString('url');
   }
   
@@ -409,7 +409,7 @@ class ImageUrl extends GiltDataHolder {
    * The width of the image
    * @var int
    */
-  public getWidth() {    
+  public function getWidth() {    
     return $this->getNumber('width');
   }
   
@@ -417,7 +417,7 @@ class ImageUrl extends GiltDataHolder {
    * The height of the image
    * @var int
    */
-  public getHeight() {    
+  public function getHeight() {    
     return $this->getNumber('height');
   }
 
@@ -429,7 +429,7 @@ class Sku extends GiltDataHolder {
    * SKU id
    * @var int
    */
-  public getId() {    
+  public function getId() {    
     return $this->getNumber('id');
   }
 
@@ -437,7 +437,7 @@ class Sku extends GiltDataHolder {
    * Describes product availability. One of: "sold out", "for sale", "reserved"
    * @var string
    */
-  public getInventoryStatus() {
+  public function getInventoryStatus() {
   	return $this->getString('inventory_status');
   }
 
@@ -445,17 +445,15 @@ class Sku extends GiltDataHolder {
    * MSRP price of SKU in US Dollars
    * @var string
    */
-  public getMsrpPrice() {
+  public function getMsrpPrice() {
   	return $this->getString('msrp_price');
   }
 
-sale_price 	String 	Sale price of SKU in US Dollars
-   * @var string
   /**
    * Sale price of SKU in US Dollars
    * @var string
    */
-  public getSalePrice() {
+  public function getSalePrice() {
   	return $this->getString('sale_price');
   }
   
@@ -464,7 +462,7 @@ sale_price 	String 	Sale price of SKU in US Dollars
    * If present, standard shipping charge is overridden by amount listed here in US Dollars.
    * @var string
    */
-  public getShippingSurcharge() {
+  public function getShippingSurcharge() {
   	return $this->getString('shipping_surcharge');
   }
 
@@ -472,7 +470,7 @@ sale_price 	String 	Sale price of SKU in US Dollars
    * Name/value pairs of SKU attributes like "color" and "size"
    * @var array
    */
-  public getAttributes() {
+  public function getAttributes() {
   	return $this->getString('attributes');
   }
 
