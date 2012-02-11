@@ -7,7 +7,7 @@
  *  $sales = $gilt->getActiveSales();
  */
  
-require_once __DIR__.'/lib/guzzle.phar';
+require_once __DIR__.'/rest.php';
  
 class Gilt {
 
@@ -21,55 +21,54 @@ class Gilt {
   const KIDS  = 'kids';
   const HOME  = 'home';
 
-	private $api_key;
-	private $rest_client;
+	private $rest;
 	
-  public function __construct($api_key, $rest_client = null) {
-    $this->api_key = $api_key;
-    if (empty($rest_client)) {
-    	$this->rest_client = new Guzzle\Service\Client('https://api.gilt.com/v1/');
+  public function __construct($api_key, $rest = null) {
+    if (empty($rest)) {
+    	$this->rest = new Rest('https://api.gilt.com/v1/', array('apikey'=>$api_key));
     } else {
-    	$this->rest_client = $rest_client;
+    	$this->rest = $rest;
     }
   }
 
-  private function buildPath($first, $last, $middle = null) {
-    if (empty($middle)) {
-      $path = $first.'/'.$last.'.json';
-    } else {
-      $path = $first.'/'.$middle.'/'.$last.'.json';
+  private function buildPath() {
+		$nargs = func_num_args();
+  	$args = func_get_args();
+  	$path = '';
+    for ($i = 0; $i < $nargs; $i++) {
+      if (empty($args[$i]) continue;
+      $path = $path.(empty($path)?'':'/').$args[$i]
     }
-    $path = $path.'?apikey='.$this->api_key;
     return $path;
   }
   
   private function getGiltData($path) {
-    $json = $this->rest_client->get($path).getBody(true);
+    $json = $this->rest->get($path);
     return GiltData::fromJson($json);
   }
     
-  private function getSales($sales_type, $store_key) {
-    $path = $this->buildPath('sales', $sales_type, $store_key);
+  private function getSales($store_key, $sales_type) {
+    $path = $this->buildPath('sales', $store_key, $sales_type);
     $gilt_data = $this->getGiltData($path);
     return new Sales($gilt_data);
   }
   
   public function getActiveSales($store_key = null) {
-    return $this->getSales('active', $store_key);
+    return $this->getSales($store_key, 'active.json');
   }
   
   public function getUpcomingSales($store_key = null) {
-    return $this->getSales('upcoming', $store_key);
+    return $this->getSales($store_key, 'upcoming.json');
   }
   
   public function getSale($store_key, $sale_key) {
-    $path = $this->buildPath('sales', $sale_key, $store_key);
+    $path = $this->buildPath('sales', $store_key, $sale_key, 'detail.json');
     $gilt_data = $this->getGiltData($path);
     return new Sale($gilt_data);
   }
   
   public function getProduct($product_id) {
-    $path = $this->buildPath('products', 'detail', $product_id);
+    $path = $this->buildPath('products', $product_id, 'detail.json');
     $gilt_data = $this->getGiltData($path);
     return new Product($gilt_data);
   }
