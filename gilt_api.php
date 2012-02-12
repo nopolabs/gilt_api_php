@@ -127,50 +127,6 @@ class GiltDataHolder {
     return $this->gilt_data->getData();
   }
   
-  public function getString($key) {
-    $data = $this->getData();
-    if (isset($data[$key])) {
-      $value = $data[$key];
-    } else {
-      $value = '';
-    }
-    return $value;
-  }  
-  
-  public function getNumber($key) {
-    $data = $this->getData();
-    if (isset($data[$key])) {
-      $value = $data[$key];
-    } else {
-      $value = 0;
-    }
-    return $value;
-  }  
-  
-  public function getArray($key) {
-    $data = $this->getData();
-    if (isset($data[$key])) {
-      $value = $data[$key];
-    } else {
-      $value = array();
-    }
-    return $value;
-  }  
-  
-  public function getArrayString($key, $subKey) {
-    $data = $this->getData();
-    if (isset($data[$key])) {
-      if (isset($data[$key][$subKey])) {
-        $value = $data[$key][$subKey];
-      } else {
-        $value = '';
-      }
-    } else {
-      $value = '';
-    }
-    return $value;
-  }  
-  
 }
 
 class Sales extends GiltDataHolder {
@@ -182,10 +138,9 @@ class Sales extends GiltDataHolder {
       $this->sales = array();
       $data = $this->getData();
       foreach ($data->sales as $sale_data) {
-var_dump($sale_data);
-//        $gilt_data = GiltData::fromData($sale_data);
-//        $sale = new Sale($gilt_data);
-//        array_push($this->sales, $sale);
+        $gilt_data = GiltData::fromData($sale_data);
+        $sale = new Sale($gilt_data);
+        array_push($this->sales, $sale);
       }
     }
     return $this->sales;
@@ -199,7 +154,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getName() {
-    return $this->getString('name');
+    return $this->getData()->name;
   }
   
   /**
@@ -207,7 +162,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getSale() {
-    return $this->getString('sale');
+    return $this->getData()->sale;
   }
   
   /**
@@ -215,7 +170,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getSaleKey() {
-    return $this->getString('sale_key');
+    return $this->getData()->sale_key;
   }
   
   /**
@@ -223,7 +178,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getStore() {
-    return $this->getString('store');
+    return $this->getData()->store;
   }
   
   /**
@@ -231,7 +186,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getDescription() {
-    return $this->getString('description');
+    return $this->getData()->description;
   }
   
   /**
@@ -239,7 +194,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getSaleUrl() {
-    return $this->getString('sale_url');
+    return $this->getData()->sale_url;
   }
   
   /**
@@ -247,7 +202,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getBegins() {
-    return $this->getString('begins');
+    return $this->getData()->begins;
   }
   
   /**
@@ -255,7 +210,7 @@ class Sale extends GiltDataHolder {
    * @var string
    */
   public function getEnds() {
-    return $this->getString('ends');
+    return $this->getData()->ends;
   }
   
   /**
@@ -263,7 +218,7 @@ class Sale extends GiltDataHolder {
    * @var array
    */
   public function getImageUrls() {
-    $data = $this->getArray('image_urls');
+    $data = $this->getData()->image_urls;
     $image_urls = array();
     foreach ($data as $key => $value) {
       $image_urls[$key] = new ImageUrl(GiltData::fromData($value));
@@ -276,7 +231,7 @@ class Sale extends GiltDataHolder {
    * @var array
    */
   public function getProducts() {
-    return $this->getArray('products');
+    return $this->getData()->products;
   }
   
 }
@@ -288,7 +243,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getName() {
-    return $this->getString('name');
+    return $this->getData()->name;
   }
   
   /**
@@ -296,7 +251,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getProduct() {
-    return $this->getString('product');
+    return $this->getData()->product;
   }
   
   /**
@@ -304,7 +259,7 @@ class Product extends GiltDataHolder {
    * @var int
    */
   public function getId() {
-    return $this->getNumber('id');
+    return $this->getData()->id;
   }
   
   /**
@@ -312,7 +267,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getBrand() {
-    return $this->getString('brand');
+    return $this->getData()->brand;
   }
   
   /**
@@ -320,7 +275,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getUrl() {
-    return $this->getString('url');
+    return $this->getData()->url;
   }
   
   /**
@@ -328,7 +283,7 @@ class Product extends GiltDataHolder {
    * @var array
    */
   public function getImageUrls() {
-    return $this->getArray('image_urls');
+    return $this->getData()->image_urls;
   }
   
   /**
@@ -336,7 +291,7 @@ class Product extends GiltDataHolder {
    * @var array
    */
   public function getSkus() {
-    $data = $this->getArray('skus');
+    $data = $this->getData()->skus;
     $skus = array();
     foreach ($data as $value) {
       $skus[] = new Sku(GiltData::fromData($value));
@@ -349,7 +304,7 @@ class Product extends GiltDataHolder {
    * @var array
    */
   public function getContent() {
-    return $this->getArray('content');
+    return $this->getData()->content;
   }
   
   /**
@@ -357,7 +312,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getDescription() {    
-    return $this->getArrayString('content', 'description');
+    return $this->getData()->content->description;
   }
 
   /**
@@ -365,7 +320,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getFitNotes() {    
-    return $this->getArrayString('content', 'fit_notes');
+    return $this->getData()->content->fit_notes;
   }
 
   /**
@@ -373,7 +328,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getMaterial() {    
-    return $this->getArrayString('content', 'material');
+    return $this->getData()->content->material;
   }
 
   /**
@@ -381,7 +336,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getCareInstructions() {    
-    return $this->getArrayString('content', 'care_instructions');
+    return $this->getData()->content->care_instructions;
   }
 
   /**
@@ -389,7 +344,7 @@ class Product extends GiltDataHolder {
    * @var string
    */
   public function getOrigin() {    
-    return $this->getArrayString('content', 'origin');
+    return $this->getData()->content->origin;
   }
 
 }
@@ -401,7 +356,7 @@ class ImageUrl extends GiltDataHolder {
    * @var string
    */
   public function getUrl() {    
-    return $this->getString('url');
+    return $this->getData()->url;
   }
   
   /**
@@ -409,7 +364,7 @@ class ImageUrl extends GiltDataHolder {
    * @var int
    */
   public function getWidth() {    
-    return $this->getNumber('width');
+    return $this->getData()->width;
   }
   
   /**
@@ -417,7 +372,7 @@ class ImageUrl extends GiltDataHolder {
    * @var int
    */
   public function getHeight() {    
-    return $this->getNumber('height');
+    return $this->getData()->height;
   }
 
 }
@@ -429,7 +384,7 @@ class Sku extends GiltDataHolder {
    * @var int
    */
   public function getId() {    
-    return $this->getNumber('id');
+    return $this->getData()->id;
   }
 
   /**
@@ -437,7 +392,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getInventoryStatus() {
-    return $this->getString('inventory_status');
+    return $this->getData()->inventory_status;
   }
 
   /**
@@ -445,7 +400,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getMsrpPrice() {
-    return $this->getString('msrp_price');
+    return $this->getData()->msrp_price;
   }
 
   /**
@@ -453,7 +408,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getSalePrice() {
-    return $this->getString('sale_price');
+    return $this->getData()->sale_price;
   }
   
   /**
@@ -462,7 +417,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getShippingSurcharge() {
-    return $this->getString('shipping_surcharge');
+    return $this->getData()->shipping_surcharge;
   }
 
   /**
@@ -470,7 +425,7 @@ class Sku extends GiltDataHolder {
    * @var array
    */
   public function getAttributes() {
-    return $this->getString('attributes');
+    return $this->getData()->attributes;
   }
 
 }
