@@ -7,7 +7,7 @@
  *  $sales = $gilt->getActiveSales();
  */
  
-require_once __DIR__.'/rest.php';
+require_once __DIR__.'/lib/rest_api.php';
  
 class Gilt {
 
