@@ -10,8 +10,12 @@ $sales = $gilt->getActiveSales(Gilt::MEN);
 </head>
 <body>
 <?php 
-var_dump($sales);
-echo $sales->getJson(); 
+foreach ($sales->getSales() as $sale) {
+?>
+<p><?php echo $sale->getName(); ?></p>
+<p><?php echo $sale->getSale(); ?></p>
+<?php
+}
 ?>
 </body>
 </html>

@@ -11,66 +11,63 @@ require_once __DIR__.'/lib/rest_api.php';
  
 class Gilt {
 
-	/**
-	 * The version of this lib
-	 */
-	const VERSION = '0.1.0';
+  /**
+   * The version of this lib
+   */
+  const VERSION = '0.1.0';
 
   const WOMEN = 'women';
   const MEN   = 'men';
   const KIDS  = 'kids';
   const HOME  = 'home';
 
-	private $rest;
-	
-  public function __construct($api_key, $rest = null) {
-    if (empty($rest)) {
-    	$this->rest = new Rest('https://api.gilt.com/v1/', array('apikey'=>$api_key));
+  private $rest_api;
+  
+  public function __construct($api_key, $rest_api = null) {
+    if (empty($rest_api)) {
+      $this->rest_api = new RestApi('https://api.gilt.com/v1/', array('apikey'=>$api_key));
     } else {
-    	$this->rest = $rest;
+      $this->rest_api = $rest_api;
     }
   }
 
-  private function buildPath() {
-		$nargs = func_num_args();
-  	$args = func_get_args();
-  	$path = '';
-    for ($i = 0; $i < $nargs; $i++) {
-      if (empty($args[$i]) continue;
-      $path = $path.(empty($path)?'':'/').$args[$i]
-    }
-    return $path;
-  }
-  
-  private function getGiltData($path) {
-    $json = $this->rest->get($path);
+  private function _getGiltData($path_els = array()) {
+    $json = $this->rest_api->get($path_els);
     return GiltData::fromJson($json);
   }
     
-  private function getSales($store_key, $sales_type) {
-    $path = $this->buildPath('sales', $store_key, $sales_type);
-    $gilt_data = $this->getGiltData($path);
+  private function _getSales($path_els = array()) {
+    array_unshift($path_els, 'sales');
+    $gilt_data = $this->_getGiltData($path_els);
     return new Sales($gilt_data);
   }
   
-  public function getActiveSales($store_key = null) {
-    return $this->getSales($store_key, 'active.json');
-  }
-  
-  public function getUpcomingSales($store_key = null) {
-    return $this->getSales($store_key, 'upcoming.json');
-  }
-  
-  public function getSale($store_key, $sale_key) {
-    $path = $this->buildPath('sales', $store_key, $sale_key, 'detail.json');
-    $gilt_data = $this->getGiltData($path);
+  private function _getSale($path_els = array()) {
+    array_unshift($path_els, 'sales');
+    $gilt_data = $this->_getGiltData($path_els);
     return new Sale($gilt_data);
   }
   
-  public function getProduct($product_id) {
-    $path = $this->buildPath('products', $product_id, 'detail.json');
-    $gilt_data = $this->getGiltData($path);
+  private function _getProduct($path_els = array()) {
+    array_unshift($path_els, 'products');
+    $gilt_data = $this->_getGiltData($path_els);
     return new Product($gilt_data);
+  }
+  
+  public function getActiveSales($store_key = null) {
+    return $this->_getSales(array($store_key, 'active.json'));
+  }
+  
+  public function getUpcomingSales($store_key = null) {
+    return $this->_getSales(array($store_key, 'upcoming.json'));
+  }
+  
+  public function getSale($store_key, $sale_key) {
+    return $this->_getSale(array($store_key, $sale_key, 'detail.json'));
+  }
+  
+  public function getProduct($product_id) {
+    return $this->_getProduct(array($product_id, 'detail.json'));
   }
 }
 
@@ -80,15 +77,15 @@ class GiltData {
   private $data;
   
   static function fromJson($json) {
-  	$gilt_data = new GiltData();
-  	$gilt_data->setJson($json);
-  	return $gilt_data;
+    $gilt_data = new GiltData();
+    $gilt_data->setJson($json);
+    return $gilt_data;
   }
 
   static function fromData($data) {
-  	$gilt_data = new GiltData();
-  	$gilt_data->setData($data);
-  	return $gilt_data;
+    $gilt_data = new GiltData();
+    $gilt_data->setData($data);
+    return $gilt_data;
   }
 
   protected function setJson($json) {
@@ -115,7 +112,7 @@ class GiltData {
 }
 
 class GiltDataHolder {
-	  
+    
   private $gilt_data;
 
   function __construct($gilt_data) {
@@ -123,15 +120,15 @@ class GiltDataHolder {
   }
   
   function getJson() {
-  	return $this->gilt_data->getJson();
+    return $this->gilt_data->getJson();
   }
   
   function getData() {
-  	return $this->gilt_data->getData();
+    return $this->gilt_data->getData();
   }
   
   public function getString($key) {
-  	$data = $this->getData();
+    $data = $this->getData();
     if (isset($data[$key])) {
       $value = $data[$key];
     } else {
@@ -141,7 +138,7 @@ class GiltDataHolder {
   }  
   
   public function getNumber($key) {
-  	$data = $this->getData();
+    $data = $this->getData();
     if (isset($data[$key])) {
       $value = $data[$key];
     } else {
@@ -151,7 +148,7 @@ class GiltDataHolder {
   }  
   
   public function getArray($key) {
-  	$data = $this->getData();
+    $data = $this->getData();
     if (isset($data[$key])) {
       $value = $data[$key];
     } else {
@@ -161,13 +158,13 @@ class GiltDataHolder {
   }  
   
   public function getArrayString($key, $subKey) {
-  	$data = $this->getData();
+    $data = $this->getData();
     if (isset($data[$key])) {
-	    if (isset($data[$key][$subKey])) {
-	      $value = $data[$key][$subKey];
-	    } else {
-	      $value = '';
-	    }
+      if (isset($data[$key][$subKey])) {
+        $value = $data[$key][$subKey];
+      } else {
+        $value = '';
+      }
     } else {
       $value = '';
     }
@@ -183,9 +180,12 @@ class Sales extends GiltDataHolder {
   public function getSales() {
     if (!isset($this->sales)) {
       $this->sales = array();
-      foreach ($this->getData() as $data) {
-        $gilt_data = GiltData::fromData($data);
-        $this->sales[] = new Sale($gilt_data);
+      $data = $this->getData();
+      foreach ($data->sales as $sale_data) {
+var_dump($sale_data);
+//        $gilt_data = GiltData::fromData($sale_data);
+//        $sale = new Sale($gilt_data);
+//        array_push($this->sales, $sale);
       }
     }
     return $this->sales;
@@ -339,7 +339,7 @@ class Product extends GiltDataHolder {
     $data = $this->getArray('skus');
     $skus = array();
     foreach ($data as $value) {
-    	$skus[] = new Sku(GiltData::fromData($value));
+      $skus[] = new Sku(GiltData::fromData($value));
     }
     return $skus;
   }
@@ -423,7 +423,7 @@ class ImageUrl extends GiltDataHolder {
 }
 
 class Sku extends GiltDataHolder {
-	
+  
   /**
    * SKU id
    * @var int
@@ -437,7 +437,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getInventoryStatus() {
-  	return $this->getString('inventory_status');
+    return $this->getString('inventory_status');
   }
 
   /**
@@ -445,7 +445,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getMsrpPrice() {
-  	return $this->getString('msrp_price');
+    return $this->getString('msrp_price');
   }
 
   /**
@@ -453,7 +453,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getSalePrice() {
-  	return $this->getString('sale_price');
+    return $this->getString('sale_price');
   }
   
   /**
@@ -462,7 +462,7 @@ class Sku extends GiltDataHolder {
    * @var string
    */
   public function getShippingSurcharge() {
-  	return $this->getString('shipping_surcharge');
+    return $this->getString('shipping_surcharge');
   }
 
   /**
@@ -470,7 +470,7 @@ class Sku extends GiltDataHolder {
    * @var array
    */
   public function getAttributes() {
-  	return $this->getString('attributes');
+    return $this->getString('attributes');
   }
 
 }
