@@ -1,0 +1,11 @@
+RewriteEngine on
+RewriteCond $1 !^(index\.php|robots\.txt|favicon\.ico|js|css|images|phpinfo\.php)
+
+# production (1and1)
+#RewriteRule ^(.*)$ /index.php/$1 [L]
+
+# development (atom)
+RewriteRule ^(.*)$ index.php/$1 [L]
+
+FileETag none
+

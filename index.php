@@ -3,19 +3,52 @@ require __DIR__."/gilt_api.php";
 
 $api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
 $gilt = new Gilt($api_key);
-$sales = $gilt->getActiveSales(Gilt::MEN);
+
+$req = explode('/', $_SERVER['REQUEST_URI']);
+$resource = $req[count($req)-1];
+
+function list_sales($gilt, $store_key) {
+  $sales = $gilt->getActiveSales($store_key);
+  $content = '';
+  foreach ($sales->getSales() as $sale) {
+    $content .= '<a href="' . $sale->getSale() . '">' . $sale->getName() . '</a><br/>';
+  }
+  return $content;
+}
+
+if ($resource === Gilt::MEN) {
+  $heading = 'MEN';
+  $content = list_sales($gilt, Gilt::MEN);
+} else if ($resource === Gilt::WOMEN) {
+  $heading = 'WOMEN';
+  $content = list_sales($gilt, Gilt::WOMEN);
+} else if ($resource === Gilt::KIDS) {
+  $heading = 'KIDS';
+  $content = list_sales($gilt, Gilt::KIDS);
+} else if ($resource === Gilt::HOME) {
+  $heading = 'HOME';
+  $content = list_sales($gilt, Gilt::HOME);
+} else {
+  $sales = $gilt->getActiveSales();
+  $stores = array();
+  foreach ($sales->getSales() as $sale) {
+    if (!isset($stores[$sale->getStore()])) {
+      $stores[$sale->getStore()] = array();
+    }
+    $stores[$sale->getStore()][] = $sale;
+  }
+  $heading = 'GILT';
+  $content = '';
+  foreach ($stores as $store_key => $store) {
+    $content .= '<a href="' . $store_key . '">' . $store_key . ' has ' . count($store) . ' sales</a><br/>';
+  }
+}
 ?>
 <html>
 <head>
 </head>
 <body>
-<?php 
-foreach ($sales->getSales() as $sale) {
-?>
-<p><?php echo $sale->getName(); ?></p>
-<p><?php echo $sale->getSale(); ?></p>
-<?php
-}
-?>
+<h1><?php echo $heading; ?></h1>
+<?php echo $content; ?>
 </body>
 </html>
