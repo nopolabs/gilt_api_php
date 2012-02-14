@@ -11,7 +11,11 @@ function list_sales($gilt, $store_key) {
   $sales = $gilt->getActiveSales($store_key);
   $content = '';
   foreach ($sales->getSales() as $sale) {
-    $content .= '<a href="' . $sale->getSale() . '">' . $sale->getName() . '</a><br/>';
+    $content .= '<h3>' . $sale->getName() . '</h3>';
+    $content .= '<p>' . $sale->getDescription() . '</p>';
+    $image_urls = $sale->getImageUrls();
+    $content .= '<img src="' . $image_urls['300x184']->getUrl() . '"/>';
+    $content .= '<hr/>';
   }
   return $content;
 }

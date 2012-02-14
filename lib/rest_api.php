@@ -12,8 +12,11 @@ class RestApi {
     $this->base_params = $base_params;
   }
 
-  public function get($path_els = array(), $params = array()) {
+  public function getPath($path_els = array(), $params = array()) {
     $url = $this->buildUrl($path_els, $params);
+    return getUrl($url, $params);
+
+  public function getUrl($url, $params = array()) {
     $rest = new RestCurlClient();
     $rsp = $rest->get($url);
     return $rsp;
