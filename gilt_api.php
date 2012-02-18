@@ -33,7 +33,11 @@ class Gilt {
     }
   }
 
-  function getGiltJson($var) {
+  public function validateStore($store_key) {
+    return in_array($store_key, array(self::WOMEN, self::MEN, self::KIDS, self::HOME));
+  }
+
+  public function getGiltJson($var) {
     if (is_array($var)) {
       return $this->rest_api->getPath($var);
     } else {
@@ -41,19 +45,19 @@ class Gilt {
     }
   }
     
-  function getSalesJson() {
+  public function getSalesJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'sales');
     return $this->getGiltJson($path_els);
   }
   
-  function getSaleJson() {
+  public function getSaleJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'sales');
     return $this->getGiltJson($path_els);
   }
   
-  function getProductJson() {
+  public function getProductJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'products');
     return $this->getGiltJson($path_els);
@@ -85,7 +89,7 @@ class GiltData {
   private $json;
   private $obj;
   
-  function __construct($data) {
+  public function __construct($data) {
     if (is_array($data)) {
       $data = $data[0];
     }
@@ -105,7 +109,7 @@ class GiltData {
     return $this->json;
   }
   
-  function getObj() {
+  public function getObj() {
     if (!isset($this->obj)) {
       $this->obj = json_decode($this->json);
     }
@@ -113,20 +117,63 @@ class GiltData {
   }
 }
 
-class Sales extends GiltData {
+class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
 
   private $sales;
   
-  public function getSales() {
-    if (!isset($this->sales)) {
-      $this->sales = array();
-      $obj = $this->getObj();
-      foreach ($obj->sales as $data) {
-        $sale = new Sale($data);
-        array_push($this->sales, $sale);
-      }
+  public function __construct($data) {
+    parent::__construct($data);
+    $this->sales = array();
+    $obj = $this->getObj();
+    foreach ($obj->sales as $data) {
+      $sale = new Sale($data);
+      array_push($this->sales, $sale);
     }
+  }
+
+  public function getSales() {
     return $this->sales;
+  }
+
+  // ArrayAccess
+  public function offsetSet($offset, $value) {
+    if (is_null($offset)) {
+      $this->sales[] = $value;
+    } else {
+      $this->sales[$offset] = $value;
+    }
+  }
+  public function offsetExists($offset) {
+    return isset($this->sales[$offset]);
+  }
+  public function offsetUnset($offset) {
+    unset($this->sales[$offset]);
+  }
+  public function offsetGet($offset) {
+    return isset($this->sales[$offset]) ? $this->sales[$offset] : null;
+  }
+
+  // Iterator
+  public function rewind() {
+    reset($this->sales);
+  }
+  public function current() {
+    return current($this->sales);
+  }
+  public function key() {
+    return key($this->sales);
+  }
+  public function next() {
+    return next($this->sales);
+  }
+  public function valid() {
+    return $this->current() !== false;
+  }   
+
+
+  // Countable
+  public function count() {
+    return count($this->sales);
   }
 }
 
