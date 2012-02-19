@@ -1,11 +1,12 @@
 <?php
-require 'gilt_api.php';
 require 'Slim/Slim.php';
+require 'gilt_view.php';
+require 'gilt_api.php';
 
 $api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
 $gilt = new Gilt($api_key);
 
-$app = new Slim();
+$app = new Slim(array('view' => new GiltView()));
 
 $app->get('/sales/upcoming.json', 'sales_upcoming_json');
 $app->get('/sales/:store_key/upcoming.json', 'store_upcoming_json');
