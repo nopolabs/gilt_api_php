@@ -27,7 +27,7 @@ class Gilt {
   
   public function __construct($api_key, $rest_api = null) {
     if (empty($rest_api)) {
-      $this->rest_api = new RestApi(Gilt::BASE_URL_V1, array('apikey'=>$api_key));
+      $this->rest_api = new RestApi(Gilt::BASE_URL_V1, array('apikey'=>$api_key), '/tmp/rest_api.log');
     } else {
       $this->rest_api = $rest_api;
     }
@@ -45,19 +45,19 @@ class Gilt {
     }
   }
     
-  public function getSalesJson() {
+  protected function getSalesJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'sales');
     return $this->getGiltJson($path_els);
   }
   
-  public function getSaleJson() {
+  protected function getSaleJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'sales');
     return $this->getGiltJson($path_els);
   }
   
-  public function getProductJson() {
+  protected function getProductJson() {
     $path_els = array_filter(func_get_args());
     array_unshift($path_els, 'products');
     return $this->getGiltJson($path_els);

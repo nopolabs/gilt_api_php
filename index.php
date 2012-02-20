@@ -68,7 +68,15 @@ function sale($store_key, $sale_key) {
     $app->notFound();
   }
   $sale = $gilt->getSale($store_key, $sale_key);
-  $app->render('sale.php', array('sale' => $sale));
+  $data = array(
+    'base_url' => $app->request()->getRootUri() . '/',
+    'heading' => $sale->getName(),
+    'detail' => $sale->getDescription(),
+    'sale' => $sale
+  );
+  $data['hero'] = renderPartial('hero.php', $data);
+  $data['content'] = renderPartial('sale.php', $data);
+  $app->render('gilt.php', $data);
 }
 
 function product($product_key) {
