@@ -68,10 +68,12 @@ function sale($store_key, $sale_key) {
     $app->notFound();
   }
   $sale = $gilt->getSale($store_key, $sale_key);
+  $imageUrls = $sale->getImageUrls();
   $data = array(
     'base_url' => $app->request()->getRootUri() . '/',
     'heading' => $sale->getName(),
     'detail' => $sale->getDescription(),
+    'image_url' => $imageUrls['370x345']->getUrl(),
     'sale' => $sale
   );
   $data['hero'] = renderPartial('hero.php', $data);

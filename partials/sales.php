@@ -1,27 +1,17 @@
 <?php 
 $store_key = $this->data['store_key'];
 $store = $this->data['store'];
-?>
-<div class="item">
-  <h2><?php echo $store_key; ?></h2>
-<?php
-$count = 0;
 foreach ($store as $sale) {
-  $count = $count + 1;
-  if ($count > 5) {
-    $remaining = count($store) - $count;
-    if ($remaining > 0) {
-?>
-  and <a href="<?php echo 'sales/' . $store_key; ?>"><?php echo $remaining . ' more sale' . (($remaining > 0) ? 's' : ''); ?></a>
-<?php
-    }
-    break;
-  }
   $url = substr($sale->getSale(), strlen(Gilt::BASE_URL_V1));
   $url = preg_replace('#/\w*\.json#', '', $url);
+  $imageUrls = $sale->getImageUrls();
+  $imgUrl = $imageUrls['100x93']->getUrl();
 ?>
-  <a href="<?php echo $url; ?>"><?php echo $sale->getName(); ?></a><br/>
+  <div class="item">
+    <h2><a href="<?php echo $url; ?>"><?php echo $sale->getName(); ?></a></h2>
+    <p><?php echo $sale->getDescription(); ?></p>
+    <img src="<?php echo $imgUrl; ?>"/>
+  </div>
 <?php
 }
-?>
-</div>
+

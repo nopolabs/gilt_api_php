@@ -228,7 +228,10 @@ class Sale extends GiltData {
    * @var string
    */
   public function getDescription() {
-    return $this->getObj()->description;
+    if (isset($this->getObj()->description)) {
+      return $this->getObj()->description;
+    }
+    return '';
   }
   
   /**
@@ -273,7 +276,10 @@ class Sale extends GiltData {
    * @var array
    */
   public function getProducts() {
-    return $this->getObj()->products;
+    if (isset($this->getObj()->products)) {
+      return $this->getObj()->products;
+    }
+    return array();
   }
   
 }
