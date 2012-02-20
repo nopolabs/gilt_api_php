@@ -33,15 +33,15 @@ function gilt() {
   global $app, $gilt;
   $sales = $gilt->getActiveSales();
   $stores = $sales->getStores();
-  $app->render('gilt.php', array(
-    'hero' => renderPartial('hero.php', array(
-      'heading' => 'Hello Shoppers!', 
-      'detail' => 'Get busy!'
-    )),
-    'content' => renderPartial('home.php', array(
-      'stores' => $stores
-    ))
-  ));
+  $data = array(
+    'base_url' => $app->request()->getRootUri() . '/',
+    'heading' => 'Hello Shoppers!', 
+    'detail' => 'Get busy!',
+    'stores' => $stores
+  );
+  $data['hero'] = renderPartial('hero.php', $data);
+  $data['content'] = renderPartial('home.php', $data);
+  $app->render('gilt.php', $data);
 }
 
 function store($store_key) {
@@ -50,15 +50,16 @@ function store($store_key) {
     $app->notFound();
   }
   $store = $gilt->getActiveSales($store_key);
-  $app->render('gilt.php', array(
-    'hero' => renderPartial('hero.php', array(
-      'heading' => 'Hello Shoppers!', 
-      'detail' => 'Get busy!'
-    )),
-    'content' => renderPartial('sales.php', array(
-      'store' => $store
-    ))
-  ));
+  $data = array(
+    'base_url' => $app->request()->getRootUri() . '/',
+    'heading' => $store_key,
+    'detail' => 'Get busy!',
+    'store_key' => $store_key,
+    'store' => $store
+  );
+  $data['hero'] = renderPartial('hero.php', $data);
+  $data['content'] = renderPartial('sales.php', $data);
+  $app->render('gilt.php', $data);
 }
 
 function sale($store_key, $sale_key) {
