@@ -120,19 +120,30 @@ class GiltData {
 class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
 
   private $sales;
+  private $stores;
   
   public function __construct($data) {
     parent::__construct($data);
     $this->sales = array();
+    $this->stores = array();
     $obj = $this->getObj();
     foreach ($obj->sales as $data) {
       $sale = new Sale($data);
       array_push($this->sales, $sale);
+      $store_key = $sale->getStore();
+      if (!array_key_exists($store_key, $this->stores)) {
+        $this->stores[$store_key] = array();
+      }
+      array_push($this->stores[$store_key], $sale);
     }
   }
 
   public function getSales() {
     return $this->sales;
+  }
+
+  public function getStores() {
+    return $this->stores;
   }
 
   // ArrayAccess
@@ -189,6 +200,7 @@ class Sale extends GiltData {
   
   /**
    * URL to single sale object
+   * e.g. "https://api.gilt.com/v1/sales/women/neutrals-794/detail.json"
    * @var string
    */
   public function getSale() {

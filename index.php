@@ -23,7 +23,8 @@ $app->get('/product/:product_key', 'product');
 function gilt() {
   global $app, $gilt;
   $sales = $gilt->getActiveSales();
-  $app->render('home.php', array('sales' => $sales));
+  $stores = $sales->getStores();
+  $app->render('home.php', array('stores' => $stores));
 }
 
 function store($store_key) {
@@ -31,8 +32,8 @@ function store($store_key) {
   if (!$gilt->validateStore($store_key)) {
     $app->notFound();
   }
-  $sales = $gilt->getActiveSales($store_key);
-  $app->render('sales.php', array('sales' => $sales));
+  $store = $gilt->getActiveSales($store_key);
+  $app->render('sales.php', array('store' => $store));
 }
 
 function sale($store_key, $sale_key) {

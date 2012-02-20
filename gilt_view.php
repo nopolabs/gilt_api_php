@@ -18,6 +18,9 @@ class GiltView extends Slim_View {
   public function render($template) {
     $this->innerView->setData($this->data);
     $content = $this->innerView->render($template);
+    if ($template == 'json.php') {
+      return $content;
+    }
     $this->outerView->setData(array('content' => $content));
     return $this->outerView->render('gilt.php');
   }

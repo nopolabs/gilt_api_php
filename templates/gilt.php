@@ -21,9 +21,7 @@
       <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="images/favicon.ico">
-
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
@@ -40,7 +38,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Project name</a>
+          <a class="brand" href="#">Gilt API demo</a>
           <div class="nav-collapse">
             <ul class="nav">
 
@@ -56,47 +54,15 @@
 
     <div class="container">
 
-      <!-- Main hero unit for a primary marketing message or call to action -->
       <div class="hero-unit">
-        <h1>Hello, world!</h1>
-        <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
+        <h1>Hello, shoppers!</h1>
+        <p>This is a demo of the GILT API PHP library.</p>
         <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 
       </div>
 
       <div class="row">
-        <div class="item">item 1</div>
-        <div class="item">item 2</div>
-        <div class="item">item 3</div>
-        <div class="item">item 4</div>
-        <div class="item">item 11</div>
-        <div class="item">item 12</div>
-        <div class="item">item 13</div>
-      </div>
-
-      <!-- Example row of columns -->
-      <div class="row">
-        <div class="span3">
-          <h2>Heading</h2>
-          <p><?php echo $this->data['content']; ?></p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-
-        </div>
-        <div class="span3">
-          <h2>Heading</h2>
-          <p><?php //echo $this->data['content']; ?></p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-       </div>
-        <div class="span3">
-          <h2>Heading</h2>
-          <p><?php //echo $this->data['content']; ?></p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-        </div>
-        <div class="span3">
-          <h2>Heading</h2>
-          <p><?php //echo $this->data['content']; ?></p>
-          <p><a class="btn" href="#">View details &raquo;</a></p>
-        </div>
+        <?php echo $this->data['content']; ?>
       </div>
 
       <hr>
@@ -106,10 +72,6 @@
       </footer>
 
     </div> <!-- /container -->
-
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
 
     <script src="js/jquery-1.7.1.js"></script>
     <script src="js/jquery.masonry.js"></script>
