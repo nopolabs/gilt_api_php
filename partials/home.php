@@ -7,7 +7,7 @@ foreach ($stores as $store_key => $store) {
 <?php
   $count = 0;
   foreach ($store as $sale) {
-    $count += 1;
+    $count = $count + 1;
     if ($count > 5) {
       $remaining = count($store) - $count;
       if ($remaining > 0) {

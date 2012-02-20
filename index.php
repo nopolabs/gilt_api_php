@@ -6,11 +6,20 @@ require 'gilt_api.php';
 $api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
 $gilt = new Gilt($api_key);
 
-$app = new Slim(array('view' => new GiltView()));
+$partial = new Slim_View();
+$partial->setTemplatesDirectory('partials');
+
+function renderPartial($template, $data) {
+  global $partial;
+  $partial->setData($data);
+  return $partial->render($template);
+}
+
+$app = new Slim();
 
 $app->get('/sales/upcoming.json', 'sales_upcoming_json');
-$app->get('/sales/:store_key/upcoming.json', 'store_upcoming_json');
 $app->get('/sales/active.json', 'sales_active_json');
+$app->get('/sales/:store_key/upcoming.json', 'store_upcoming_json');
 $app->get('/sales/:store_key/active.json', 'store_active_json');
 $app->get('/sales/:store_key/:sale_key/detail.json', 'sale_detail_json');
 $app->get('/product/:product_key/detail.json', 'product_detail_json');
@@ -24,7 +33,15 @@ function gilt() {
   global $app, $gilt;
   $sales = $gilt->getActiveSales();
   $stores = $sales->getStores();
-  $app->render('home.php', array('stores' => $stores));
+  $app->render('gilt.php', array(
+    'hero' => renderPartial('hero.php', array(
+      'heading' => 'Hello Shoppers!', 
+      'detail' => 'Get busy!'
+    )),
+    'content' => renderPartial('home.php', array(
+      'stores' => $stores
+    ))
+  ));
 }
 
 function store($store_key) {
@@ -33,7 +50,15 @@ function store($store_key) {
     $app->notFound();
   }
   $store = $gilt->getActiveSales($store_key);
-  $app->render('sales.php', array('store' => $store));
+  $app->render('gilt.php', array(
+    'hero' => renderPartial('hero.php', array(
+      'heading' => 'Hello Shoppers!', 
+      'detail' => 'Get busy!'
+    )),
+    'content' => renderPartial('sales.php', array(
+      'store' => $store
+    ))
+  ));
 }
 
 function sale($store_key, $sale_key) {

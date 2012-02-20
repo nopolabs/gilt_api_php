@@ -42,9 +42,8 @@
           <div class="nav-collapse">
             <ul class="nav">
 
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li class="active"><a href="http://github.nopolabs.com/gilt_api_php">GitHub</a></li>
+              <li><a href="http://nopolabs.com">NopoLabs</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -55,10 +54,7 @@
     <div class="container">
 
       <div class="hero-unit">
-        <h1>Hello, shoppers!</h1>
-        <p>This is a demo of the GILT API PHP library.</p>
-        <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-
+        <?php echo $this->data['hero'] ?>
       </div>
 
       <div class="row">
@@ -68,7 +64,7 @@
       <hr>
 
       <footer>
-        <p>&copy; Company 2012</p>
+        <p>&copy; <a href="http://nopolabs.com">NopoLabs</a> 2012</p>
       </footer>
 
     </div> <!-- /container -->
