@@ -11,7 +11,6 @@ function gilt_get($url) {
   return json_decode($json);
 }
 
-
 $sales = gilt_get("https://api.gilt.com/v1/sales/active.json");
 foreach ($sales->sales as $sale) {
   echo $sale->sale ."\n";
@@ -30,4 +29,3 @@ foreach ($sales->sales as $sale) {
     }
   }
 }
-  

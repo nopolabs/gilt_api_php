@@ -17,6 +17,7 @@ function renderPartial($template, $data) {
 
 $app = new Slim();
 
+// JSON
 $app->get('/sales/upcoming.json', 'sales_upcoming_json');
 $app->get('/sales/active.json', 'sales_active_json');
 $app->get('/sales/:store_key/upcoming.json', 'store_upcoming_json');
@@ -24,6 +25,7 @@ $app->get('/sales/:store_key/active.json', 'store_active_json');
 $app->get('/sales/:store_key/:sale_key/detail.json', 'sale_detail_json');
 $app->get('/product/:product_key/detail.json', 'product_detail_json');
 
+// HTML
 $app->get('/', 'home');
 $app->get('/sales', 'home');
 $app->get('/sales/:store_key', 'store');
