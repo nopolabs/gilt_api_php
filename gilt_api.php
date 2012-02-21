@@ -135,6 +135,14 @@ class GiltData {
     }
     return $this->obj;
   }
+
+  /**
+   * hack to allow fixing broken product URLs in "products/.../detail.json"
+   */
+  public function fixObj($obj) {
+    $this->obj = $obj;
+    $this->json = null;
+  }
 }
 
 class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
@@ -320,6 +328,18 @@ class Product extends GiltData {
    */
   public function getProduct() {
     return $this->getObj()->product;
+  }
+
+  /**
+   * hack to allow fixing broken product URLs in "products/.../detail.json"
+   * https://api.gilt.com/v1/products/122087788/detail.json
+   */
+  public function fixProduct($url) {
+    $obj = $this->getObj();
+    $obj->product = $url;
+    $id = preg_replace('#https://api.gilt.com/v1/products/(\d*)/detail.json#', '\1', $url);
+    $obj->id = $id;
+    $this->fixObj($obj);
   }
   
   /**

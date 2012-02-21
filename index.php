@@ -74,7 +74,9 @@ function sale($store_key, $sale_key) {
   $imageUrls = $sale->getImageUrls();
   $products = array();
   foreach ($sale->getProducts() as $product_id) {
-    $products[] = $gilt->getProduct($product_id);
+    $detail = $gilt->getProduct($product_id);
+    $detail->fixProduct($product_id); // hack to fix broken urls in product details
+    $products[] = $detail;
   }
   $data = array(
     'base_url' => $app->request()->getRootUri() . '/',
@@ -92,7 +94,17 @@ function sale($store_key, $sale_key) {
 function product($product_key) {
   global $app, $gilt;
   $product = $gilt->getProduct($product_key);
-  $app->render('product.php', array('product' => $product));
+  $imageUrls = $product->getImageUrls();
+  $data = array(
+    'base_url' => $app->request()->getRootUri() . '/',
+    'heading' => $product->getName(),
+    'detail' => $product->getDescription(),
+    'image_url' => $imageUrls['300x400']->getUrl(),
+    'product' => $product
+  );
+  $data['hero'] = renderPartial('hero.php', $data);
+  $data['content'] = '';
+  $app->render('gilt.php', $data);
 }
 
 function sales_upcoming_json() {
