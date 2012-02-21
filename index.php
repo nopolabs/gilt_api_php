@@ -1,9 +1,10 @@
 <?php
 require 'Slim/Slim.php';
 require 'gilt_api.php';
+require 'lib/http_get.php';
 
 $api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
-$gilt = new Gilt($api_key);
+$gilt = new Gilt($api_key, new HttpGet());
 
 $partial = new Slim_View();
 $partial->setTemplatesDirectory('partials');
@@ -73,9 +74,7 @@ function sale($store_key, $sale_key) {
   $imageUrls = $sale->getImageUrls();
   $products = array();
   foreach ($sale->getProducts() as $product_id) {
-    $detail = $gilt->getProduct($product_id);
-    $detail->fixProduct($product_id); // hack to fix broken urls in product details
-    $products[] = $detail;
+    $products[] = $gilt->getProduct($product_id);
   }
   $data = array(
     'base_url' => $app->request()->getRootUri() . '/',

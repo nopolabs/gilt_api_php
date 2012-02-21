@@ -1,5 +1,6 @@
 <?php
 require 'gilt_api.php';
+require 'lib/http_get.php';
 
 class GiltApiTest extends PHPUnit_Framework_TestCase {
 
@@ -13,7 +14,7 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
   }
 
   public function test_validateStore() {
-    $gilt = new Gilt('test_api_key');
+    $gilt = new Gilt('test_api_key', null);
     $this->assertTrue($gilt->validateStore('women'));
     $this->assertTrue($gilt->validateStore('men'));
     $this->assertTrue($gilt->validateStore('kids'));
@@ -22,15 +23,13 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
   }
 
   public function test_getActiveSales() {
-    $gilt = new Gilt('test_api_key');
+    $url = 'https://test_bare_url/sales/active.json?apikey=test_api_key';
     $response = file_get_contents('test/data/active_sales.json');
-    $rest_api = $this->getMockRestApi();
-    $rest_api->expects($this->once())
-             ->method('getUrl')
-             ->with($gilt->getBaseUrl() . 'sales/active.json?apikey=test_api_key')
-             ->will($this->returnValue($response));
-    $gilt->setRestApi($rest_api);
+    $http_get = $this->getMockHttpGetOnce($url, $response);
+    $gilt = new Gilt('test_api_key', $http_get, 'https://test_bare_url/');
+
     $sales = $gilt->getActiveSales();
+
     $this->checkArrayInterfaces($sales, 75);
     $stores = $sales->getStores();
     $this->assertEquals(4, count($stores));
@@ -41,15 +40,13 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
   }
 
   public function test_getActiveSales_men() {
-    $gilt = new Gilt('test_api_key');
+    $url = 'https://test_bare_url/sales/men/active.json?apikey=test_api_key';
     $response = file_get_contents('test/data/active_sales_men.json');
-    $rest_api = $this->getMockRestApi();
-    $rest_api->expects($this->once())
-             ->method('getUrl')
-             ->with($gilt->getBaseUrl() . 'sales/' . Gilt::MEN . '/active.json?apikey=test_api_key')
-             ->will($this->returnValue($response));
-    $gilt->setRestApi($rest_api);
+    $http_get = $this->getMockHttpGetOnce($url, $response);
+    $gilt = new Gilt('test_api_key', $http_get, 'https://test_bare_url/');
+
     $sales = $gilt->getActiveSales(Gilt::MEN);
+
     $this->checkArrayInterfaces($sales, 18);
     $stores = $sales->getStores();
     $this->assertEquals(3, count($stores));
@@ -60,15 +57,13 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
   }
 
   public function test_getUpcomingSales() {
-    $gilt = new Gilt('test_api_key');
+    $url = 'https://test_bare_url/sales/upcoming.json?apikey=test_api_key';
     $response = file_get_contents('test/data/upcoming_sales.json');
-    $rest_api = $this->getMockRestApi();
-    $rest_api->expects($this->once())
-             ->method('getUrl')
-             ->with($gilt->getBaseUrl() . 'sales/upcoming.json?apikey=test_api_key')
-             ->will($this->returnValue($response));
-    $gilt->setRestApi($rest_api);
+    $http_get = $this->getMockHttpGetOnce($url, $response);
+    $gilt = new Gilt('test_api_key', $http_get, 'https://test_bare_url/');
+
     $sales = $gilt->getUpcomingSales();
+
     $this->checkArrayInterfaces($sales, 131);
     $stores = $sales->getStores();
     $this->assertEquals(4, count($stores));
@@ -86,11 +81,13 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
 
   ////
 
-  private function getMockRestApi() {
-    $rest_api = $this->getMockBuilder('RestApi')
-                     ->disableOriginalConstructor()
-                     ->getMock();
-    return $rest_api;
+  private function getMockHttpGetOnce($url, $response) {
+    $http_get = $this->getMock('HttpGet');
+    $http_get->expects($this->once())
+             ->method('get')
+             ->with($url)
+             ->will($this->returnValue($response));
+    return $http_get;
   }
 
   private function checkArrayInterfaces($target, $count) {

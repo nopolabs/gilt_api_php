@@ -7,8 +7,6 @@
  *  $sales = $gilt->getActiveSales();
  */
  
-require_once __DIR__.'/lib/rest_api.php';
- 
 class Gilt {
 
   /**
@@ -25,16 +23,12 @@ class Gilt {
 
   private $api_key;
   private $base_url;
-  private $rest_api;
+  private $http_get;
   
-  public function __construct($api_key, $base_url=Gilt::BASE_URL_V1) {
+  public function __construct($api_key, $http_get, $base_url=Gilt::BASE_URL_V1) {
     $this->api_key = $api_key;
+    $this->http_get = $http_get;
     $this->base_url = $base_url;
-    $this->rest_api = new RestApi('/tmp/rest_api.log');
-  }
-
-  public function setRestApi($rest_api) {
-    $this->rest_api = $rest_api;
   }
 
   public function getBaseUrl() {
@@ -71,7 +65,8 @@ class Gilt {
 
   protected function getGiltJson($url) {
     $url = $url . '?' . 'apikey=' . $this->api_key;
-    return $this->rest_api->getUrl($url);
+    $json = $this->http_get->get($url);
+    return json_decode($json);
   }
     
   protected function getSalesJson() {
@@ -134,14 +129,6 @@ class GiltData {
       $this->obj = json_decode($this->json);
     }
     return $this->obj;
-  }
-
-  /**
-   * hack to allow fixing broken product URLs in "products/.../detail.json"
-   */
-  public function fixObj($obj) {
-    $this->obj = $obj;
-    $this->json = null;
   }
 }
 
@@ -330,18 +317,6 @@ class Product extends GiltData {
     return $this->getObj()->product;
   }
 
-  /**
-   * hack to allow fixing broken product URLs in "products/.../detail.json"
-   * https://api.gilt.com/v1/products/122087788/detail.json
-   */
-  public function fixProduct($url) {
-    $obj = $this->getObj();
-    $obj->product = $url;
-    $id = preg_replace('#https://api.gilt.com/v1/products/(\d*)/detail.json#', '\1', $url);
-    $obj->id = $id;
-    $this->fixObj($obj);
-  }
-  
   /**
    * Unique identifier for product
    * @var int
