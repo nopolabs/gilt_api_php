@@ -1,6 +1,5 @@
 <?php
 require 'Slim/Slim.php';
-require 'gilt_view.php';
 require 'gilt_api.php';
 
 $api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
