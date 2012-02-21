@@ -24,6 +24,7 @@ class Gilt {
   private $api_key;
   private $base_url;
   private $http_get;
+  private $log_file;
   
   public function __construct($api_key, $http_get, $base_url=Gilt::BASE_URL_V1) {
     $this->api_key = $api_key;
@@ -63,9 +64,21 @@ class Gilt {
     return new Product($json);
   }
 
+  public function setLogFile($log_file) {
+    $this->log_file = $log_file;
+  }
+
+  protected function log($msg) {
+    if (isset($this->log_file)) {
+      file_put_contents($this->log_file, $msg."\n", FILE_APPEND);
+    }
+  }
+
   protected function getGiltJson($url) {
     $url = $url . '?' . 'apikey=' . $this->api_key;
+    $this->log('URL: ' . $url);
     $json = $this->http_get->get($url);
+    $this->log('RSP: ' . $json);
     return json_decode($json);
   }
     
