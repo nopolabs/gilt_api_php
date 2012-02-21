@@ -24,12 +24,13 @@ $app->get('/sales/:store_key/active.json', 'store_active_json');
 $app->get('/sales/:store_key/:sale_key/detail.json', 'sale_detail_json');
 $app->get('/product/:product_key/detail.json', 'product_detail_json');
 
-$app->get('/', 'gilt');
+$app->get('/', 'home');
+$app->get('/sales', 'home');
 $app->get('/sales/:store_key', 'store');
 $app->get('/sales/:store_key/:sale_key', 'sale');
 $app->get('/product/:product_key', 'product');
 
-function gilt() {
+function home() {
   global $app, $gilt;
   $sales = $gilt->getActiveSales();
   $stores = $sales->getStores();
@@ -58,7 +59,7 @@ function store($store_key) {
     'store' => $store
   );
   $data['hero'] = renderPartial('hero.php', $data);
-  $data['content'] = renderPartial('sales.php', $data);
+  $data['content'] = renderPartial('store.php', $data);
   $app->render('gilt.php', $data);
 }
 
@@ -69,12 +70,17 @@ function sale($store_key, $sale_key) {
   }
   $sale = $gilt->getSale($store_key, $sale_key);
   $imageUrls = $sale->getImageUrls();
+  $products = array();
+  foreach ($sale->getProducts() as $product_id) {
+    $products[] = $gilt->getProduct($product_id);
+  }
   $data = array(
     'base_url' => $app->request()->getRootUri() . '/',
     'heading' => $sale->getName(),
     'detail' => $sale->getDescription(),
-    'image_url' => $imageUrls['370x345']->getUrl(),
-    'sale' => $sale
+    'image_url' => $imageUrls['300x280']->getUrl(),
+    'sale' => $sale,
+    'products' => $products
   );
   $data['hero'] = renderPartial('hero.php', $data);
   $data['content'] = renderPartial('sale.php', $data);

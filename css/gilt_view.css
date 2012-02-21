@@ -3,6 +3,16 @@ body {
   padding-bottom: 40px;
 //  background-color: red;
 }
+.hero-unit {
+  position: relative;
+  overflow: auto;
+  padding: 30px;
+}
+.hero-unit img {
+  float: right;
+  height: 280px;
+  width: 300px;
+}
 .row {
 //  background-color: pink;
 }

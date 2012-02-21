@@ -1,9 +1,10 @@
 <?php 
 $stores = $this->data['stores'];
 foreach ($stores as $store_key => $store) {
+  $store_url = 'sales/' . $store_key;
 ?>
 <div class="item">
-  <h2><?php echo $store_key; ?></h2>
+  <h2><a href="<?php echo $store_url; ?>"><?php echo $store_key; ?></a></h2>
 <?php
   $count = 0;
   foreach ($store as $sale) {
@@ -12,7 +13,7 @@ foreach ($stores as $store_key => $store) {
       $remaining = count($store) - $count;
       if ($remaining > 0) {
 ?>
-    and <a href="<?php echo 'sales/' . $store_key; ?>"><?php echo $remaining . ' more sale' . (($remaining > 0) ? 's' : ''); ?></a>
+    and <a href="<?php echo $store_url; ?>"><?php echo $remaining . ' more sale' . (($remaining > 0) ? 's' : ''); ?></a>
 <?php
       }
       break;

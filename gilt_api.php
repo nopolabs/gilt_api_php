@@ -23,46 +23,28 @@ class Gilt {
   const KIDS  = 'kids';
   const HOME  = 'home';
 
+  private $api_key;
+  private $base_url;
   private $rest_api;
   
-  public function __construct($api_key, $rest_api = null) {
-    if (empty($rest_api)) {
-      $this->rest_api = new RestApi(Gilt::BASE_URL_V1, array('apikey'=>$api_key), '/tmp/rest_api.log');
-    } else {
-      $this->rest_api = $rest_api;
-    }
+  public function __construct($api_key, $base_url=Gilt::BASE_URL_V1) {
+    $this->api_key = $api_key;
+    $this->base_url = $base_url;
+    $this->rest_api = new RestApi('/tmp/rest_api.log');
+  }
+
+  public function setRestApi($rest_api) {
+    $this->rest_api = $rest_api;
+  }
+
+  public function getBaseUrl() {
+    return $this->base_url;
   }
 
   public function validateStore($store_key) {
     return in_array($store_key, array(self::WOMEN, self::MEN, self::KIDS, self::HOME));
   }
 
-  public function getGiltJson($var) {
-    if (is_array($var)) {
-      return $this->rest_api->getPath($var);
-    } else {
-      return $this->rest_api->getUrl($var);
-    }
-  }
-    
-  protected function getSalesJson() {
-    $path_els = array_filter(func_get_args());
-    array_unshift($path_els, 'sales');
-    return $this->getGiltJson($path_els);
-  }
-  
-  protected function getSaleJson() {
-    $path_els = array_filter(func_get_args());
-    array_unshift($path_els, 'sales');
-    return $this->getGiltJson($path_els);
-  }
-  
-  protected function getProductJson() {
-    $path_els = array_filter(func_get_args());
-    array_unshift($path_els, 'products');
-    return $this->getGiltJson($path_els);
-  }
-  
   public function getActiveSales($store_key = null) {
     $json = $this->getSalesJson($store_key, 'active.json');
     return new Sales($json);
@@ -79,8 +61,46 @@ class Gilt {
   }
   
   public function getProduct($product_id) {
-    $json = $this->getProductJson($product_id, 'detail.json');
+    if (preg_match('#^'.$this->getBaseUrl().'#', $product_id)) {
+      $json = $this->getGiltJson($product_id);
+    } else {
+      $json = $this->getProductJson($product_id, 'detail.json');
+    }
     return new Product($json);
+  }
+
+  protected function getGiltJson($url) {
+    $url = $url . '?' . 'apikey=' . $this->api_key;
+    return $this->rest_api->getUrl($url);
+  }
+    
+  protected function getSalesJson() {
+    $path_els = array_filter(func_get_args());
+    $url = $this->buildUrl($path_els, 'sales');
+    return $this->getGiltJson($url);
+  }
+  
+  protected function getSaleJson() {
+    $path_els = array_filter(func_get_args());
+    $url = $this->buildUrl($path_els, 'sales');
+    return $this->getGiltJson($url);
+  }
+  
+  protected function getProductJson() {
+    $path_els = array_filter(func_get_args());
+    $url = $this->buildUrl($path_els, 'products');
+    return $this->getGiltJson($url);
+  }
+
+  protected function buildUrl($path_els, $el) {
+    array_unshift($path_els, $el);
+    $url = '';
+    foreach ($path_els as $el) {
+      if (empty($el)) continue;
+      $url = (empty($url)) ? '' : ($url . '/');
+      $url = $url . $el;
+    }
+    return $this->base_url . $url;
   }
 }
 
@@ -331,7 +351,12 @@ class Product extends GiltData {
    * @var array
    */
   public function getImageUrls() {
-    return $this->getObj()->image_urls;
+    $data = $this->getObj()->image_urls;
+    $image_urls = array();
+    foreach ($data as $key => $value) {
+      $image_urls[$key] = new ImageUrl($value);
+    }
+    return $image_urls;
   }
   
   /**
