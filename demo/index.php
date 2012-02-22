@@ -6,7 +6,7 @@ require 'lib/partial.php';
 require 'app/json_handlers.php';
 require 'app/html_handlers.php';
 
-$api_key = 'c73a7c168dd90eb31a76e2e9a6290890';
+$api_key = '<api_key_goes_here>';
 $gilt = new Gilt($api_key, new HttpGet());
 
 $gilt->setLogFile('/tmp/gilt.log');

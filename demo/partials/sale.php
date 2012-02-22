@@ -1,7 +1,7 @@
 <?php
 $products = $this->data['products'];
 foreach ($products as $product) {
-  $url = 'product/' . $product->getId();
+  $url = 'products/' . $product->getId();
   $imageUrls = $product->getImageUrls();
   $imgUrl = $imageUrls['91x121']->getUrl();
 ?>
