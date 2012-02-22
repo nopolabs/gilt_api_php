@@ -119,12 +119,80 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals(33, count($stores[Gilt::MEN]));
     $this->assertEquals(33, count($stores[Gilt::KIDS]));
     $this->assertEquals(21, count($stores[Gilt::HOME]));
+
+    $array = $sales->getSales();
+    $sale = $array[0];
+    $this->assertEquals('Casual Theme', $sale->getName());
   }
 
   public function test_getSale() {
+    $url = 'https://api.gilt.com/v1/sales/men/sunglasses-shop-312/detail.json?apikey=test_api_key';
+    $response = file_get_contents('test/data/sale_detail.json');
+    $http_get = $this->getMockHttpGetOnce($url, $response);
+    $gilt = new Gilt('test_api_key', $http_get);
+
+    $sale = $gilt->getSale('men', 'sunglasses-shop-312');
+
+    $this->assertEquals('Sunglasses Shop', $sale->getName());
+    $this->assertEquals('https://api.gilt.com/v1/sales/men/sunglasses-shop-312/detail.json', $sale->getSale());
+    $this->assertEquals('sunglasses-shop-312', $sale->getSaleKey());
+    $this->assertEquals('men', $sale->getStore());
+    $this->assertEquals('Spring’s right around the corner — and summer not long after that — which means now’s the perfect time to invest in a pair of great sunglasses. Luckily for you, we’ve compiled this collection of stylish shades by Oliver Peoples, Linda Farrow, Garrett Leight, and a host of others. Stock up, and get ready for the season ahead. ', $sale->getDescription());
+    $this->assertEquals('http://www.gilt.com/sale/men/sunglasses-shop-312?utm_medium=api&utm_campaign=bagspotting.com&utm_source=salesapi', $sale->getSaleUrl());
+    $this->assertEquals('2012-02-21T17:00:00Z', $sale->getBegins());
+    $this->assertEquals('2012-02-23T05:00:00Z', $sale->getEnds());
+
+    $imageUrls = $sale->getImageUrls();
+    $this->assertEquals(6, count($imageUrls));
+    foreach ($imageUrls as $key => $image_url) {
+      $this->assertEquals($key, $image_url->getWidth() . 'x' . $image_url->getHeight());
+      $this->assertEquals(1, preg_match('#http://cdn1.gilt.com/images/share/uploads/\d+/\d+/\d+/\d+/orig.jpg#', $image_url->getUrl()));
+    }
+
+    $products = $sale->getProducts();
+    $this->assertEquals(93, count($products));
+    foreach ($products as $product_url) {
+      $this->assertEquals(1, preg_match('#https://api.gilt.com/v1/products/\d+/detail.json#', $product_url));
+    }
   }
 
   public function test_getProduct() {
+    $url = 'https://api.gilt.com/v1/products/98723426/detail.json?apikey=test_api_key';
+    $response = file_get_contents('test/data/product_detail.json');
+    $http_get = $this->getMockHttpGetOnce($url, $response);
+    $gilt = new Gilt('test_api_key', $http_get);
+
+    $product = $gilt->getProduct('98723426');
+
+    $this->assertEquals('Horn Aviator Sunglasses', $product->getName());
+    $this->assertEquals('https://api.gilt.com/v1/products/98723426/detail.json', $product->getProduct());
+    $this->assertEquals('98723426', $product->getId());
+    $this->assertEquals('Linda Farrow Luxe', $product->getBrand());
+    $this->assertEquals('Linda Farrow Luxe horn acetate aviator sunglasses.  Saddle nose bridge and acetate and metal stems with cushioned ear pieces.  Embossed logo at sides of lenses and at interior temple.  Single Lens Width: 60 mm, Distance Between Lenses: 15 mm, Temple Length: 135 mm.  Comes with dust cloth and designer hard case.', $product->getDescription());
+    $this->assertEquals('Acetate, Metal', $product->getMaterial());
+    $this->assertEquals('Japan', $product->getOrigin());
+    $this->assertEquals('http://www.gilt.com/m/public/look/?utm_medium=api&utm_campaign=bagspotting.com&utm_source=salesapi&s_id=cabe55a136143232787257042cf4347d387277926ffe81bb840d1d79fffce3e7_0_98723426', $product->getUrl());
+
+    $imageUrls = $product->getImageUrls();
+    $this->assertEquals(3, count($imageUrls));
+    foreach ($imageUrls as $key => $image_url) {
+      $this->assertEquals($key, $image_url->getWidth() . 'x' . $image_url->getHeight());
+      $this->assertEquals(1, preg_match('#http://cdn1.gilt.com/images/share/uploads/\d+/\d+/\d+/\d+/'.$key.'.jpg#', $image_url->getUrl()));
+    }
+
+    $skus = $product->getSkus();
+    $this->assertEquals(1, count($skus));
+    $sku = $skus[0];
+    $this->assertEquals('1373748', $sku->getId());
+    $this->assertEquals('sold out', $sku->getInventoryStatus());
+    $this->assertEquals('628.00', $sku->getMsrpPrice());
+    $this->assertEquals('199.00', $sku->getSalePrice());
+
+    $attributes = $sku->getAttributes();
+    $this->assertEquals(1, count($attributes));
+    $attribute = $attributes[0];
+    $this->assertEquals('color', $attribute->name);
+    $this->assertEquals('brown horn dark brown', $attribute->value);
   }
 
   ////
