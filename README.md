@@ -26,3 +26,11 @@ Usage
     $gilt = new Gilt($api_key, $http_get);
     $sales = $gilt->getActiveSales();
 
+Demo
+----
+The demo PHP app allows browsing of Gilt sales and products.
+
+The app was built using the Slim framework and the Twitter bootstrap library.
+
+Edit demo/index.php to set your Gilt API key.
+
