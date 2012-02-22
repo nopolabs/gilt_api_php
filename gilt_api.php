@@ -3,7 +3,8 @@
  * Gilt API PHP
  *
  *  $api_key = <your_gilt_api_key>;
- *  $gilt = new Gilt($api_key);
+ *  $http_get = new HttpGet();
+ *  $gilt = new Gilt($api_key, $http_get);
  *  $sales = $gilt->getActiveSales();
  */
  
@@ -32,35 +33,47 @@ class Gilt {
     $this->base_url = $base_url;
   }
 
-  public function getBaseUrl() {
-    return $this->base_url;
-  }
-
   public function validateStore($store_key) {
     return in_array($store_key, array(self::WOMEN, self::MEN, self::KIDS, self::HOME));
   }
 
+  public function getActiveSalesUrl($store_key = null) {
+    return $this->buildUrl('sales', $store_key, 'active.json');
+  }
+
+  public function getUpcomingSalesUrl($store_key = null) {
+    return $this->buildUrl('sales', $store_key, 'upcoming.json');
+  }
+
+  public function getSaleUrl($store_key, $sale_key = null) {
+    return $this->buildUrl('sales', $store_key, $sale_key, 'detail.json');
+  }
+
+  public function getProductUrl($product_id) {
+    return $this->buildUrl('products', $product_id, 'detail.json');
+  }
+
   public function getActiveSales($store_key = null) {
-    $json = $this->getSalesJson($store_key, 'active.json');
+    $url = $this->getActiveSalesUrl($store_key);
+    $json = $this->getGiltJson($url);
     return new Sales($json);
   }
   
   public function getUpcomingSales($store_key = null) {
-    $json = $this->getSalesJson($store_key, 'upcoming.json');
+    $url = $this->getUpcomingSalesUrl($store_key);
+    $json = $this->getGiltJson($url);
     return new Sales($json);
   }
   
-  public function getSale($store_key, $sale_key) {
-    $json = $this->getSaleJson($store_key, $sale_key, 'detail.json');
+  public function getSale($store_key, $sale_key = null) {
+    $url = $this->getSaleUrl($store_key, $sale_key);
+    $json = $this->getGiltJson($url);
     return new Sale($json);
   }
   
   public function getProduct($product_id) {
-    if (preg_match('#^'.$this->getBaseUrl().'#', $product_id)) {
-      $json = $this->getGiltJson($product_id);
-    } else {
-      $json = $this->getProductJson($product_id, 'detail.json');
-    }
+    $url = $this->getProductUrl($product_id);
+    $json = $this->getGiltJson($url);
     return new Product($json);
   }
 
@@ -70,45 +83,31 @@ class Gilt {
 
   protected function log($msg) {
     if (isset($this->log_file)) {
-      file_put_contents($this->log_file, $msg."\n", FILE_APPEND);
+      file_put_contents($this->log_file, $msg."\n"); //, FILE_APPEND);
     }
   }
 
   protected function getGiltJson($url) {
-    $url = $url . '?' . 'apikey=' . $this->api_key;
     $this->log('URL: ' . $url);
     $json = $this->http_get->get($url);
     $this->log('RSP: ' . $json);
     return json_decode($json);
   }
     
-  protected function getSalesJson() {
+  protected function buildUrl() {
     $path_els = array_filter(func_get_args());
-    $url = $this->buildUrl($path_els, 'sales');
-    return $this->getGiltJson($url);
-  }
-  
-  protected function getSaleJson() {
-    $path_els = array_filter(func_get_args());
-    $url = $this->buildUrl($path_els, 'sales');
-    return $this->getGiltJson($url);
-  }
-  
-  protected function getProductJson() {
-    $path_els = array_filter(func_get_args());
-    $url = $this->buildUrl($path_els, 'products');
-    return $this->getGiltJson($url);
-  }
-
-  protected function buildUrl($path_els, $el) {
-    array_unshift($path_els, $el);
-    $url = '';
-    foreach ($path_els as $el) {
-      if (empty($el)) continue;
-      $url = (empty($url)) ? '' : ($url . '/');
-      $url = $url . $el;
+    $url_pattern = '#' . $this->base_url . '.*\.json#';
+    if (isset($path_els[1]) && preg_match($url_pattern, $path_els[1])) {
+      $url = $path_els[1];
+    } else {
+      $url = $this->base_url;
+      $sep = '';
+      foreach ($path_els as $el) {
+        $url .= $sep . $el;
+        $sep = '/';
+      }
     }
-    return $this->base_url . $url;
+    return $url . '?' . 'apikey=' . $this->api_key;
   }
 }
 
@@ -132,7 +131,7 @@ class GiltData {
 
   public function getJson() {
     if (!isset($this->json)) {
-      $this->json = json_encode($this->data);
+      $this->json = json_encode($this->obj);
     }
     return $this->json;
   }

@@ -22,6 +22,54 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
     $this->assertFalse($gilt->validateStore('not_a_store'));
   }
 
+  public function test_getActiveSalesUrl() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getActiveSalesUrl();
+    $this->assertEquals('https://api.gilt.com/v1/sales/active.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getActiveSalesUrl_store() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getActiveSalesUrl('men');
+    $this->assertEquals('https://api.gilt.com/v1/sales/men/active.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getUpcomingSalesUrl() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getUpcomingSalesUrl();
+    $this->assertEquals('https://api.gilt.com/v1/sales/upcoming.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getUpcomingSalesUrl_store() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getUpcomingSalesUrl('men');
+    $this->assertEquals('https://api.gilt.com/v1/sales/men/upcoming.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getSaleUrl_store_sale() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getSaleUrl('men', 'test_sale');
+    $this->assertEquals('https://api.gilt.com/v1/sales/men/test_sale/detail.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getSaleUrl_url() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getSaleUrl('https://api.gilt.com/v1/sales/men/test_sale/detail.json');
+    $this->assertEquals('https://api.gilt.com/v1/sales/men/test_sale/detail.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getProductUrl_product() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getProductUrl('00000000');
+    $this->assertEquals('https://api.gilt.com/v1/products/00000000/detail.json?apikey=test_api_key', $url);
+  }
+
+  public function test_getProductUrl_url() {
+    $gilt = new Gilt('test_api_key', null);
+    $url = $gilt->getProductUrl('https://api.gilt.com/v1/products/00000000/detail.json');
+    $this->assertEquals('https://api.gilt.com/v1/products/00000000/detail.json?apikey=test_api_key', $url);
+  }
+
   public function test_getActiveSales() {
     $url = 'https://test_bare_url/sales/active.json?apikey=test_api_key';
     $response = file_get_contents('test/data/active_sales.json');
@@ -39,11 +87,11 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals(15, count($stores[Gilt::HOME]));
   }
 
-  public function test_getActiveSales_men() {
-    $url = 'https://test_bare_url/sales/men/active.json?apikey=test_api_key';
+  public function test_getActiveSales_store() {
+    $url = 'https://test_base_url/sales/men/active.json?apikey=test_api_key';
     $response = file_get_contents('test/data/active_sales_men.json');
     $http_get = $this->getMockHttpGetOnce($url, $response);
-    $gilt = new Gilt('test_api_key', $http_get, 'https://test_bare_url/');
+    $gilt = new Gilt('test_api_key', $http_get, 'https://test_base_url/');
 
     $sales = $gilt->getActiveSales(Gilt::MEN);
 
@@ -57,10 +105,10 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
   }
 
   public function test_getUpcomingSales() {
-    $url = 'https://test_bare_url/sales/upcoming.json?apikey=test_api_key';
+    $url = 'https://test_base_url/sales/upcoming.json?apikey=test_api_key';
     $response = file_get_contents('test/data/upcoming_sales.json');
     $http_get = $this->getMockHttpGetOnce($url, $response);
-    $gilt = new Gilt('test_api_key', $http_get, 'https://test_bare_url/');
+    $gilt = new Gilt('test_api_key', $http_get, 'https://test_base_url/');
 
     $sales = $gilt->getUpcomingSales();
 
