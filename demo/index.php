@@ -1,7 +1,7 @@
 <?php
 require 'Slim/Slim.php';
 require '../gilt_api.php';
-require '../lib/http_get.php';
+require '../lib/cache_http_get.php';
 require 'lib/partial.php';
 require 'app/json_handlers.php';
 require 'app/html_handlers.php';
@@ -9,9 +9,9 @@ require 'app/html_handlers.php';
 $api_key = file_get_contents('/etc/gilt_apikey');
 //$api_key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
-$gilt = new Gilt($api_key, new HttpGet());
+$gilt = new Gilt($api_key, new CacheHttpGet('cache'));
 
-$gilt->setLogFile('/tmp/gilt.log');
+//$gilt->setLogFile('/tmp/gilt.log');
 
 $app = new Slim();
 
