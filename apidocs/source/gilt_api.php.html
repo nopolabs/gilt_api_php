@@ -1,0 +1,674 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="generator" content="PHPDoctor 2RC4 (http://peej.github.com/phpdoctor/)">
+<meta name="when" content="Fri, 24 Feb 2012 05:38:22 +0000">
+
+<link rel="stylesheet" type="text/css" href="../stylesheet.css">
+<link rel="start" href="../overview-summary.html">
+
+<title>gilt_api.php (Gilt API PHP)</title>
+
+</head>
+<body id="file" onload="parent.document.title=document.title;">
+
+<div class="header">
+<h1>Gilt API PHP</h1>
+<ul>
+<li><a href="../overview-summary.html">Overview</a></li>
+<li>Package</li><li>Class</li><li>Tree</li><li><a href="../overview-files.html">Files</a></li>
+<li><a href="../deprecated-list.html">Deprecated</a></li>
+<li><a href="../todo-list.html">Todo</a></li>
+<li><a href="../index-all.html">Index</a></li>
+</ul>
+</div>
+
+<div class="small_links">
+<a href="../index.html" target="_top">Frames</a>
+<a href="../source/gilt_api.php.html" target="_top">No frames</a>
+</div>
+<hr>
+
+<h1>gilt_api.php</h1>
+<hr>
+
+<a name="line1"></a><pre><?php
+<a name="line2"></a>/**
+<a name="line3"></a> * Gilt API PHP
+<a name="line4"></a> *
+<a name="line5"></a> * <pre>
+<a name="line6"></a> * $api_key = your_gilt_api_key;
+<a name="line7"></a> * $http_get = new HttpGet();
+<a name="line8"></a> * $gilt = new Gilt($api_key, $http_get);
+<a name="line9"></a> * $sales = $gilt->getActiveSales();
+<a name="line10"></a> * </pre>
+<a name="line11"></a> */
+<a name="line12"></a>class Gilt {
+<a name="line13"></a>
+<a name="line14"></a>  /**
+<a name="line15"></a>   * The version of this lib
+<a name="line16"></a>   */
+<a name="line17"></a>  const VERSION = '0.1.0';
+<a name="line18"></a>
+<a name="line19"></a>  const BASE_URL_V1 = 'https://api.gilt.com/v1/';
+<a name="line20"></a>
+<a name="line21"></a>  const WOMEN = 'women';
+<a name="line22"></a>  const MEN   = 'men';
+<a name="line23"></a>  const KIDS  = 'kids';
+<a name="line24"></a>  const HOME  = 'home';
+<a name="line25"></a>
+<a name="line26"></a>  private $api_key;
+<a name="line27"></a>  private $base_url;
+<a name="line28"></a>  private $http_get;
+<a name="line29"></a>  private $log_file;
+<a name="line30"></a>  
+<a name="line31"></a>  public function __construct($api_key, $http_get, $base_url=Gilt::BASE_URL_V1) {
+<a name="line32"></a>    $this->api_key = $api_key;
+<a name="line33"></a>    $this->http_get = $http_get;
+<a name="line34"></a>    $this->base_url = $base_url;
+<a name="line35"></a>  }
+<a name="line36"></a>
+<a name="line37"></a>  /**
+<a name="line38"></a>   * Verify that $store_key is a valid store key.
+<a name="line39"></a>   * @return boolean
+<a name="line40"></a>   */
+<a name="line41"></a>  public function validateStore($store_key) {
+<a name="line42"></a>    return in_array($store_key, array(self::WOMEN, self::MEN, self::KIDS, self::HOME));
+<a name="line43"></a>  }
+<a name="line44"></a>
+<a name="line45"></a>  /**
+<a name="line46"></a>   * Get the URL for the JSON document describing all active sales.
+<a name="line47"></a>   * Optional store_key selects sales for a single store if provided.
+<a name="line48"></a>   * @return string
+<a name="line49"></a>   */
+<a name="line50"></a>  public function getActiveSalesUrl($store_key = null) {
+<a name="line51"></a>    return $this->buildUrl('sales', $store_key, 'active.json');
+<a name="line52"></a>  }
+<a name="line53"></a>
+<a name="line54"></a>  /**
+<a name="line55"></a>   * Get the URL for the JSON document describing upcoming sales.
+<a name="line56"></a>   * Optional store_key selects sales for a single store if provided.
+<a name="line57"></a>   * @return string
+<a name="line58"></a>   */
+<a name="line59"></a>  public function getUpcomingSalesUrl($store_key = null) {
+<a name="line60"></a>    return $this->buildUrl('sales', $store_key, 'upcoming.json');
+<a name="line61"></a>  }
+<a name="line62"></a>
+<a name="line63"></a>  /**
+<a name="line64"></a>   * Get the URL for the JSON document describing a specific active or upcoming sale.
+<a name="line65"></a>   * @return string
+<a name="line66"></a>   */
+<a name="line67"></a>  public function getSaleUrl($store_key, $sale_key) {
+<a name="line68"></a>    return $this->buildUrl('sales', $store_key, $sale_key, 'detail.json');
+<a name="line69"></a>  }
+<a name="line70"></a>
+<a name="line71"></a>  /**
+<a name="line72"></a>   * Get the URL for the JSON document describing a specific product.
+<a name="line73"></a>   * @return string
+<a name="line74"></a>   */
+<a name="line75"></a>  public function getProductUrl($product_id) {
+<a name="line76"></a>    return $this->buildUrl('products', $product_id, 'detail.json');
+<a name="line77"></a>  }
+<a name="line78"></a>
+<a name="line79"></a>  /**
+<a name="line80"></a>   * Get active Sales.
+<a name="line81"></a>   * Optional store_key selects sales for a single store if provided.
+<a name="line82"></a>   * @return Sales
+<a name="line83"></a>   */
+<a name="line84"></a>  public function getActiveSales($store_key = null) {
+<a name="line85"></a>    $url = $this->getActiveSalesUrl($store_key);
+<a name="line86"></a>    $json = $this->getGiltJson($url);
+<a name="line87"></a>    return new Sales($json);
+<a name="line88"></a>  }
+<a name="line89"></a>  
+<a name="line90"></a>  /**
+<a name="line91"></a>   * Get upcoming Sales.
+<a name="line92"></a>   * Optional store_key selects sales for a single store if provided.
+<a name="line93"></a>   * @return Sales
+<a name="line94"></a>   */
+<a name="line95"></a>  public function getUpcomingSales($store_key = null) {
+<a name="line96"></a>    $url = $this->getUpcomingSalesUrl($store_key);
+<a name="line97"></a>    $json = $this->getGiltJson($url);
+<a name="line98"></a>    return new Sales($json);
+<a name="line99"></a>  }
+<a name="line100"></a>  
+<a name="line101"></a>  /**
+<a name="line102"></a>   * Get a specific Sale.
+<a name="line103"></a>   * @return Sale
+<a name="line104"></a>   */
+<a name="line105"></a>  public function getSale($store_key, $sale_key) {
+<a name="line106"></a>    $url = $this->getSaleUrl($store_key, $sale_key);
+<a name="line107"></a>    $json = $this->getGiltJson($url);
+<a name="line108"></a>    return new Sale($json);
+<a name="line109"></a>  }
+<a name="line110"></a>  
+<a name="line111"></a>  /**
+<a name="line112"></a>   * Get a specific Product.
+<a name="line113"></a>   * @return Product
+<a name="line114"></a>   */
+<a name="line115"></a>  public function getProduct($product_id) {
+<a name="line116"></a>    $url = $this->getProductUrl($product_id);
+<a name="line117"></a>    $json = $this->getGiltJson($url);
+<a name="line118"></a>    return new Product($json);
+<a name="line119"></a>  }
+<a name="line120"></a>
+<a name="line121"></a>  /**
+<a name="line122"></a>   * Specify the location of the log file.
+<a name="line123"></a>   * If specified API request and responses will be recorded in this file.
+<a name="line124"></a>   */
+<a name="line125"></a>  public function setLogFile($log_file) {
+<a name="line126"></a>    $this->log_file = $log_file;
+<a name="line127"></a>  }
+<a name="line128"></a>
+<a name="line129"></a>  protected function log($msg) {
+<a name="line130"></a>    if (isset($this->log_file)) {
+<a name="line131"></a>      file_put_contents($this->log_file, $msg."\n"); //, FILE_APPEND);
+<a name="line132"></a>    }
+<a name="line133"></a>  }
+<a name="line134"></a>
+<a name="line135"></a>  protected function getGiltJson($url) {
+<a name="line136"></a>    $this->log('URL: ' . $url);
+<a name="line137"></a>    $json = $this->http_get->get($url);
+<a name="line138"></a>    $this->log('RSP: ' . $json);
+<a name="line139"></a>    return json_decode($json);
+<a name="line140"></a>  }
+<a name="line141"></a>    
+<a name="line142"></a>  protected function buildUrl() {
+<a name="line143"></a>    $path_els = array_filter(func_get_args());
+<a name="line144"></a>    $url_pattern = '#' . $this->base_url . '.*\.json#';
+<a name="line145"></a>    if (isset($path_els[1]) && preg_match($url_pattern, $path_els[1])) {
+<a name="line146"></a>      $url = $path_els[1];
+<a name="line147"></a>    } else {
+<a name="line148"></a>      $url = $this->base_url;
+<a name="line149"></a>      $sep = '';
+<a name="line150"></a>      foreach ($path_els as $el) {
+<a name="line151"></a>        $url .= $sep . $el;
+<a name="line152"></a>        $sep = '/';
+<a name="line153"></a>      }
+<a name="line154"></a>    }
+<a name="line155"></a>    return $url . '?' . 'apikey=' . $this->api_key;
+<a name="line156"></a>  }
+<a name="line157"></a>}
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * Base class for Gilt API objects.
+<a name="line161"></a> */
+<a name="line162"></a>class GiltData {
+<a name="line163"></a>
+<a name="line164"></a>  private $json;
+<a name="line165"></a>  private $obj;
+<a name="line166"></a>  
+<a name="line167"></a>  public function __construct($data) {
+<a name="line168"></a>    if (is_array($data)) {
+<a name="line169"></a>      $data = $data[0];
+<a name="line170"></a>    }
+<a name="line171"></a>    if (is_object($data)) {
+<a name="line172"></a>      $this->obj = $data;
+<a name="line173"></a>      $this->json = null;
+<a name="line174"></a>    } else {
+<a name="line175"></a>      $this->obj = null;
+<a name="line176"></a>      $this->json = $data;
+<a name="line177"></a>    }
+<a name="line178"></a>  }
+<a name="line179"></a>
+<a name="line180"></a>  /**
+<a name="line181"></a>   * Get JSON representing this object.
+<a name="line182"></a>   * @return string
+<a name="line183"></a>   */
+<a name="line184"></a>  public function getJson() {
+<a name="line185"></a>    if (!isset($this->json)) {
+<a name="line186"></a>      $this->json = json_encode($this->obj);
+<a name="line187"></a>    }
+<a name="line188"></a>    return $this->json;
+<a name="line189"></a>  }
+<a name="line190"></a>  
+<a name="line191"></a>  protected function getObj() {
+<a name="line192"></a>    if (!isset($this->obj)) {
+<a name="line193"></a>      $this->obj = json_decode($this->json);
+<a name="line194"></a>    }
+<a name="line195"></a>    return $this->obj;
+<a name="line196"></a>  }
+<a name="line197"></a>}
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * A set of Sales with implementing ArrayAccess, Iterator, and Countable interfaces. 
+<a name="line201"></a> */
+<a name="line202"></a>class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
+<a name="line203"></a>
+<a name="line204"></a>  private $sales;
+<a name="line205"></a>  private $stores;
+<a name="line206"></a>  
+<a name="line207"></a>  public function __construct($data) {
+<a name="line208"></a>    parent::__construct($data);
+<a name="line209"></a>    $this->sales = array();
+<a name="line210"></a>    $this->stores = array();
+<a name="line211"></a>    $obj = $this->getObj();
+<a name="line212"></a>    foreach ($obj->sales as $data) {
+<a name="line213"></a>      $sale = new Sale($data);
+<a name="line214"></a>      array_push($this->sales, $sale);
+<a name="line215"></a>      $store_key = $sale->getStore();
+<a name="line216"></a>      if (!array_key_exists($store_key, $this->stores)) {
+<a name="line217"></a>        $this->stores[$store_key] = array();
+<a name="line218"></a>      }
+<a name="line219"></a>      array_push($this->stores[$store_key], $sale);
+<a name="line220"></a>    }
+<a name="line221"></a>  }
+<a name="line222"></a>
+<a name="line223"></a>  /**
+<a name="line224"></a>   * Get an array of Sale objects.
+<a name="line225"></a>   * @return array
+<a name="line226"></a>   */
+<a name="line227"></a>  public function getSales() {
+<a name="line228"></a>    return $this->sales;
+<a name="line229"></a>  }
+<a name="line230"></a>
+<a name="line231"></a>  /**
+<a name="line232"></a>   * Get a map of store_key => Sales
+<a name="line233"></a>   * @return array
+<a name="line234"></a>   */
+<a name="line235"></a>  public function getStores() {
+<a name="line236"></a>    return $this->stores;
+<a name="line237"></a>  }
+<a name="line238"></a>
+<a name="line239"></a>  /**
+<a name="line240"></a>   * @see http://php.net/manual/en/class.arrayaccess.php
+<a name="line241"></a>   */
+<a name="line242"></a>  public function offsetSet($offset, $value) {
+<a name="line243"></a>    if (is_null($offset)) {
+<a name="line244"></a>      $this->sales[] = $value;
+<a name="line245"></a>    } else {
+<a name="line246"></a>      $this->sales[$offset] = $value;
+<a name="line247"></a>    }
+<a name="line248"></a>  }
+<a name="line249"></a>
+<a name="line250"></a>  /**
+<a name="line251"></a>   * @see http://php.net/manual/en/class.arrayaccess.php
+<a name="line252"></a>   */
+<a name="line253"></a>  public function offsetExists($offset) {
+<a name="line254"></a>    return isset($this->sales[$offset]);
+<a name="line255"></a>  }
+<a name="line256"></a>
+<a name="line257"></a>  /**
+<a name="line258"></a>   * @see http://php.net/manual/en/class.arrayaccess.php
+<a name="line259"></a>   */
+<a name="line260"></a>  public function offsetUnset($offset) {
+<a name="line261"></a>    unset($this->sales[$offset]);
+<a name="line262"></a>  }
+<a name="line263"></a>
+<a name="line264"></a>  /**
+<a name="line265"></a>   * @see http://php.net/manual/en/class.arrayaccess.php
+<a name="line266"></a>   */
+<a name="line267"></a>  public function offsetGet($offset) {
+<a name="line268"></a>    return isset($this->sales[$offset]) ? $this->sales[$offset] : null;
+<a name="line269"></a>  }
+<a name="line270"></a>
+<a name="line271"></a>  /**
+<a name="line272"></a>   * @see http://www.php.net/manual/en/class.iterator.php
+<a name="line273"></a>   */
+<a name="line274"></a>  public function rewind() {
+<a name="line275"></a>    reset($this->sales);
+<a name="line276"></a>  }
+<a name="line277"></a>
+<a name="line278"></a>  /**
+<a name="line279"></a>   * @see http://www.php.net/manual/en/class.iterator.php
+<a name="line280"></a>   */
+<a name="line281"></a>  public function current() {
+<a name="line282"></a>    return current($this->sales);
+<a name="line283"></a>  }
+<a name="line284"></a>
+<a name="line285"></a>  /**
+<a name="line286"></a>   * @see http://www.php.net/manual/en/class.iterator.php
+<a name="line287"></a>   */
+<a name="line288"></a>  public function key() {
+<a name="line289"></a>    return key($this->sales);
+<a name="line290"></a>  }
+<a name="line291"></a>
+<a name="line292"></a>  /**
+<a name="line293"></a>   * @see http://www.php.net/manual/en/class.iterator.php
+<a name="line294"></a>   */
+<a name="line295"></a>  public function next() {
+<a name="line296"></a>    return next($this->sales);
+<a name="line297"></a>  }
+<a name="line298"></a>
+<a name="line299"></a>  /**
+<a name="line300"></a>   * @see http://www.php.net/manual/en/class.iterator.php
+<a name="line301"></a>   */
+<a name="line302"></a>  public function valid() {
+<a name="line303"></a>    return $this->current() !== false;
+<a name="line304"></a>  }   
+<a name="line305"></a>
+<a name="line306"></a>  /**
+<a name="line307"></a>   * @see http://us3.php.net/manual/en/class.countable.php 
+<a name="line308"></a>   */
+<a name="line309"></a>  public function count() {
+<a name="line310"></a>    return count($this->sales);
+<a name="line311"></a>  }
+<a name="line312"></a>}
+<a name="line313"></a>
+<a name="line314"></a>/**
+<a name="line315"></a> * A Sale.
+<a name="line316"></a> */
+<a name="line317"></a>class Sale extends GiltData {
+<a name="line318"></a>  
+<a name="line319"></a>  /**
+<a name="line320"></a>   * Sale name
+<a name="line321"></a>   * @var string
+<a name="line322"></a>   */
+<a name="line323"></a>  public function getName() {
+<a name="line324"></a>    return $this->getObj()->name;
+<a name="line325"></a>  }
+<a name="line326"></a>  
+<a name="line327"></a>  /**
+<a name="line328"></a>   * URL to single sale object
+<a name="line329"></a>   * e.g. "https://api.gilt.com/v1/sales/women/neutrals-794/detail.json"
+<a name="line330"></a>   * @var string
+<a name="line331"></a>   */
+<a name="line332"></a>  public function getSale() {
+<a name="line333"></a>    return $this->getObj()->sale;
+<a name="line334"></a>  }
+<a name="line335"></a>  
+<a name="line336"></a>  /**
+<a name="line337"></a>   * unique identifier for sale
+<a name="line338"></a>   * @var string
+<a name="line339"></a>   */
+<a name="line340"></a>  public function getSaleKey() {
+<a name="line341"></a>    return $this->getObj()->sale_key;
+<a name="line342"></a>  }
+<a name="line343"></a>  
+<a name="line344"></a>  /**
+<a name="line345"></a>   * Store key
+<a name="line346"></a>   * @var string
+<a name="line347"></a>   */
+<a name="line348"></a>  public function getStore() {
+<a name="line349"></a>    return $this->getObj()->store;
+<a name="line350"></a>  }
+<a name="line351"></a>  
+<a name="line352"></a>  /**
+<a name="line353"></a>   * A description of the sale's theme or brand (optional)
+<a name="line354"></a>   * @var string
+<a name="line355"></a>   */
+<a name="line356"></a>  public function getDescription() {
+<a name="line357"></a>    if (isset($this->getObj()->description)) {
+<a name="line358"></a>      return $this->getObj()->description;
+<a name="line359"></a>    }
+<a name="line360"></a>    return '';
+<a name="line361"></a>  }
+<a name="line362"></a>  
+<a name="line363"></a>  /**
+<a name="line364"></a>   * Permalink to sale website
+<a name="line365"></a>   * @var string
+<a name="line366"></a>   */
+<a name="line367"></a>  public function getSaleUrl() {
+<a name="line368"></a>    return $this->getObj()->sale_url;
+<a name="line369"></a>  }
+<a name="line370"></a>  
+<a name="line371"></a>  /**
+<a name="line372"></a>   * ISO8601-formatted time for beginning of sale
+<a name="line373"></a>   * @var string
+<a name="line374"></a>   */
+<a name="line375"></a>  public function getBegins() {
+<a name="line376"></a>    return $this->getObj()->begins;
+<a name="line377"></a>  }
+<a name="line378"></a>  
+<a name="line379"></a>  /**
+<a name="line380"></a>   * ISO-8601-formatted time for end of sale (optional)
+<a name="line381"></a>   * @var string
+<a name="line382"></a>   */
+<a name="line383"></a>  public function getEnds() {
+<a name="line384"></a>    return $this->getObj()->ends;
+<a name="line385"></a>  }
+<a name="line386"></a>  
+<a name="line387"></a>  /**
+<a name="line388"></a>   * See image URLs
+<a name="line389"></a>   * @var array
+<a name="line390"></a>   */
+<a name="line391"></a>  public function getImageUrls() {
+<a name="line392"></a>    $data = $this->getObj()->image_urls;
+<a name="line393"></a>    $image_urls = array();
+<a name="line394"></a>    foreach ($data as $key => $value) {
+<a name="line395"></a>      $image_urls[$key] = new ImageUrl($value);
+<a name="line396"></a>    }
+<a name="line397"></a>    return $image_urls;
+<a name="line398"></a>  }
+<a name="line399"></a>  
+<a name="line400"></a>  /**
+<a name="line401"></a>   * List of URLs to individual product objects (optional, active sales only)
+<a name="line402"></a>   * @var array
+<a name="line403"></a>   */
+<a name="line404"></a>  public function getProducts() {
+<a name="line405"></a>    if (isset($this->getObj()->products)) {
+<a name="line406"></a>      return $this->getObj()->products;
+<a name="line407"></a>    }
+<a name="line408"></a>    return array();
+<a name="line409"></a>  }
+<a name="line410"></a>  
+<a name="line411"></a>}
+<a name="line412"></a>
+<a name="line413"></a>/**
+<a name="line414"></a> * A Product.
+<a name="line415"></a> */
+<a name="line416"></a>class Product extends GiltData {
+<a name="line417"></a>
+<a name="line418"></a>  /**
+<a name="line419"></a>   * Product name
+<a name="line420"></a>   * @var string
+<a name="line421"></a>   */
+<a name="line422"></a>  public function getName() {
+<a name="line423"></a>    return $this->getObj()->name;
+<a name="line424"></a>  }
+<a name="line425"></a>  
+<a name="line426"></a>  /**
+<a name="line427"></a>   * URL to product object
+<a name="line428"></a>   * @var string
+<a name="line429"></a>   */
+<a name="line430"></a>  public function getProduct() {
+<a name="line431"></a>    return $this->getObj()->product;
+<a name="line432"></a>  }
+<a name="line433"></a>
+<a name="line434"></a>  /**
+<a name="line435"></a>   * Unique identifier for product
+<a name="line436"></a>   * @var int
+<a name="line437"></a>   */
+<a name="line438"></a>  public function getId() {
+<a name="line439"></a>    return $this->getObj()->id;
+<a name="line440"></a>  }
+<a name="line441"></a>  
+<a name="line442"></a>  /**
+<a name="line443"></a>   * Brand name
+<a name="line444"></a>   * @var string
+<a name="line445"></a>   */
+<a name="line446"></a>  public function getBrand() {
+<a name="line447"></a>    return $this->getObj()->brand;
+<a name="line448"></a>  }
+<a name="line449"></a>  
+<a name="line450"></a>  /**
+<a name="line451"></a>   * Link to product detail page where item can be purchased
+<a name="line452"></a>   * @var string
+<a name="line453"></a>   */
+<a name="line454"></a>  public function getUrl() {
+<a name="line455"></a>    return $this->getObj()->url;
+<a name="line456"></a>  }
+<a name="line457"></a>  
+<a name="line458"></a>  /**
+<a name="line459"></a>   * See Image URLs
+<a name="line460"></a>   * @var array
+<a name="line461"></a>   */
+<a name="line462"></a>  public function getImageUrls() {
+<a name="line463"></a>    $data = $this->getObj()->image_urls;
+<a name="line464"></a>    $image_urls = array();
+<a name="line465"></a>    foreach ($data as $key => $value) {
+<a name="line466"></a>      $image_urls[$key] = new ImageUrl($value);
+<a name="line467"></a>    }
+<a name="line468"></a>    return $image_urls;
+<a name="line469"></a>  }
+<a name="line470"></a>  
+<a name="line471"></a>  /**
+<a name="line472"></a>   * See SKUs
+<a name="line473"></a>   * @var array
+<a name="line474"></a>   */
+<a name="line475"></a>  public function getSkus() {
+<a name="line476"></a>    $data = $this->getObj()->skus;
+<a name="line477"></a>    $skus = array();
+<a name="line478"></a>    foreach ($data as $value) {
+<a name="line479"></a>      $skus[] = new Sku($value);
+<a name="line480"></a>    }
+<a name="line481"></a>    return $skus;
+<a name="line482"></a>  }
+<a name="line483"></a>  
+<a name="line484"></a>  /**
+<a name="line485"></a>   * An array containing following fields: description, fit_notes, material, care_instructions, origin
+<a name="line486"></a>   * @var array
+<a name="line487"></a>   */
+<a name="line488"></a>  public function getContent() {
+<a name="line489"></a>    return $this->getObj()->content;
+<a name="line490"></a>  }
+<a name="line491"></a>  
+<a name="line492"></a>  /**
+<a name="line493"></a>   * Product description (optional)
+<a name="line494"></a>   * @var string
+<a name="line495"></a>   */
+<a name="line496"></a>  public function getDescription() {    
+<a name="line497"></a>    return $this->getObj()->content->description;
+<a name="line498"></a>  }
+<a name="line499"></a>
+<a name="line500"></a>  /**
+<a name="line501"></a>   * Sizing information (optional)
+<a name="line502"></a>   * @var string
+<a name="line503"></a>   */
+<a name="line504"></a>  public function getFitNotes() {    
+<a name="line505"></a>    return $this->getObj()->content->fit_notes;
+<a name="line506"></a>  }
+<a name="line507"></a>
+<a name="line508"></a>  /**
+<a name="line509"></a>   * Materials list (optional)
+<a name="line510"></a>   * @var string
+<a name="line511"></a>   */
+<a name="line512"></a>  public function getMaterial() {    
+<a name="line513"></a>    return $this->getObj()->content->material;
+<a name="line514"></a>  }
+<a name="line515"></a>
+<a name="line516"></a>  /**
+<a name="line517"></a>   * Additional care information (optional)
+<a name="line518"></a>   * @var string
+<a name="line519"></a>   */
+<a name="line520"></a>  public function getCareInstructions() {    
+<a name="line521"></a>    return $this->getObj()->content->care_instructions;
+<a name="line522"></a>  }
+<a name="line523"></a>
+<a name="line524"></a>  /**
+<a name="line525"></a>   * Place of manufacture (optional)
+<a name="line526"></a>   * @var string
+<a name="line527"></a>   */
+<a name="line528"></a>  public function getOrigin() {    
+<a name="line529"></a>    return $this->getObj()->content->origin;
+<a name="line530"></a>  }
+<a name="line531"></a>
+<a name="line532"></a>}
+<a name="line533"></a>
+<a name="line534"></a>class ImageUrl extends GiltData {
+<a name="line535"></a>
+<a name="line536"></a>  /**
+<a name="line537"></a>   * The URL to the image
+<a name="line538"></a>   * @var string
+<a name="line539"></a>   */
+<a name="line540"></a>  public function getUrl() {    
+<a name="line541"></a>    return $this->getObj()->url;
+<a name="line542"></a>  }
+<a name="line543"></a>  
+<a name="line544"></a>  /**
+<a name="line545"></a>   * The width of the image
+<a name="line546"></a>   * @var int
+<a name="line547"></a>   */
+<a name="line548"></a>  public function getWidth() {    
+<a name="line549"></a>    return $this->getObj()->width;
+<a name="line550"></a>  }
+<a name="line551"></a>  
+<a name="line552"></a>  /**
+<a name="line553"></a>   * The height of the image
+<a name="line554"></a>   * @var int
+<a name="line555"></a>   */
+<a name="line556"></a>  public function getHeight() {    
+<a name="line557"></a>    return $this->getObj()->height;
+<a name="line558"></a>  }
+<a name="line559"></a>
+<a name="line560"></a>}
+<a name="line561"></a>
+<a name="line562"></a>class Sku extends GiltData {
+<a name="line563"></a>  
+<a name="line564"></a>  /**
+<a name="line565"></a>   * SKU id
+<a name="line566"></a>   * @var int
+<a name="line567"></a>   */
+<a name="line568"></a>  public function getId() {    
+<a name="line569"></a>    return $this->getObj()->id;
+<a name="line570"></a>  }
+<a name="line571"></a>
+<a name="line572"></a>  /**
+<a name="line573"></a>   * Describes product availability. One of: "sold out", "for sale", "reserved"
+<a name="line574"></a>   * @var string
+<a name="line575"></a>   */
+<a name="line576"></a>  public function getInventoryStatus() {
+<a name="line577"></a>    return $this->getObj()->inventory_status;
+<a name="line578"></a>  }
+<a name="line579"></a>
+<a name="line580"></a>  /**
+<a name="line581"></a>   * MSRP price of SKU in US Dollars
+<a name="line582"></a>   * @var string
+<a name="line583"></a>   */
+<a name="line584"></a>  public function getMsrpPrice() {
+<a name="line585"></a>    return $this->getObj()->msrp_price;
+<a name="line586"></a>  }
+<a name="line587"></a>
+<a name="line588"></a>  /**
+<a name="line589"></a>   * Sale price of SKU in US Dollars
+<a name="line590"></a>   * @var string
+<a name="line591"></a>   */
+<a name="line592"></a>  public function getSalePrice() {
+<a name="line593"></a>    return $this->getObj()->sale_price;
+<a name="line594"></a>  }
+<a name="line595"></a>  
+<a name="line596"></a>  /**
+<a name="line597"></a>   * If absent, standard Gilt.com shipping policy and any resulting charges apply. 
+<a name="line598"></a>   * If present, standard shipping charge is overridden by amount listed here in US Dollars.
+<a name="line599"></a>   * @var string
+<a name="line600"></a>   */
+<a name="line601"></a>  public function getShippingSurcharge() {
+<a name="line602"></a>    return $this->getObj()->shipping_surcharge;
+<a name="line603"></a>  }
+<a name="line604"></a>
+<a name="line605"></a>  /**
+<a name="line606"></a>   * Name/value pairs of SKU attributes like "color" and "size"
+<a name="line607"></a>   * @var array
+<a name="line608"></a>   */
+<a name="line609"></a>  public function getAttributes() {
+<a name="line610"></a>    return $this->getObj()->attributes;
+<a name="line611"></a>  }
+<a name="line612"></a>
+<a name="line613"></a>}
+<a name="line614"></a></pre>
+<div class="header">
+<h1>Gilt API PHP</h1>
+<ul>
+<li><a href="../overview-summary.html">Overview</a></li>
+<li>Package</li><li>Class</li><li>Tree</li><li><a href="../overview-files.html">Files</a></li>
+<li><a href="../deprecated-list.html">Deprecated</a></li>
+<li><a href="../todo-list.html">Todo</a></li>
+<li><a href="../index-all.html">Index</a></li>
+</ul>
+</div>
+
+<div class="small_links">
+<a href="../index.html" target="_top">Frames</a>
+<a href="../source/gilt_api.php.html" target="_top">No frames</a>
+</div>
+<hr>
+
+<p id="footer">This document was generated by <a href="http://peej.github.com/phpdoctor/">PHPDoctor: The PHP Documentation Creator</a></p>
+
+</body>
+
+</html>

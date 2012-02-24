@@ -2,12 +2,13 @@
 /**
  * Gilt API PHP
  *
- *  $api_key = <your_gilt_api_key>;
- *  $http_get = new HttpGet();
- *  $gilt = new Gilt($api_key, $http_get);
- *  $sales = $gilt->getActiveSales();
+ * <pre>
+ * $api_key = your_gilt_api_key;
+ * $http_get = new HttpGet();
+ * $gilt = new Gilt($api_key, $http_get);
+ * $sales = $gilt->getActiveSales();
+ * </pre>
  */
- 
 class Gilt {
 
   /**
@@ -33,50 +34,94 @@ class Gilt {
     $this->base_url = $base_url;
   }
 
+  /**
+   * Verify that $store_key is a valid store key.
+   * @return boolean
+   */
   public function validateStore($store_key) {
     return in_array($store_key, array(self::WOMEN, self::MEN, self::KIDS, self::HOME));
   }
 
+  /**
+   * Get the URL for the JSON document describing all active sales.
+   * Optional store_key selects sales for a single store if provided.
+   * @return string
+   */
   public function getActiveSalesUrl($store_key = null) {
     return $this->buildUrl('sales', $store_key, 'active.json');
   }
 
+  /**
+   * Get the URL for the JSON document describing upcoming sales.
+   * Optional store_key selects sales for a single store if provided.
+   * @return string
+   */
   public function getUpcomingSalesUrl($store_key = null) {
     return $this->buildUrl('sales', $store_key, 'upcoming.json');
   }
 
-  public function getSaleUrl($store_key, $sale_key = null) {
+  /**
+   * Get the URL for the JSON document describing a specific active or upcoming sale.
+   * @return string
+   */
+  public function getSaleUrl($store_key, $sale_key) {
     return $this->buildUrl('sales', $store_key, $sale_key, 'detail.json');
   }
 
+  /**
+   * Get the URL for the JSON document describing a specific product.
+   * @return string
+   */
   public function getProductUrl($product_id) {
     return $this->buildUrl('products', $product_id, 'detail.json');
   }
 
+  /**
+   * Get active Sales.
+   * Optional store_key selects sales for a single store if provided.
+   * @return Sales
+   */
   public function getActiveSales($store_key = null) {
     $url = $this->getActiveSalesUrl($store_key);
     $json = $this->getGiltJson($url);
     return new Sales($json);
   }
   
+  /**
+   * Get upcoming Sales.
+   * Optional store_key selects sales for a single store if provided.
+   * @return Sales
+   */
   public function getUpcomingSales($store_key = null) {
     $url = $this->getUpcomingSalesUrl($store_key);
     $json = $this->getGiltJson($url);
     return new Sales($json);
   }
   
-  public function getSale($store_key, $sale_key = null) {
+  /**
+   * Get a specific Sale.
+   * @return Sale
+   */
+  public function getSale($store_key, $sale_key) {
     $url = $this->getSaleUrl($store_key, $sale_key);
     $json = $this->getGiltJson($url);
     return new Sale($json);
   }
   
+  /**
+   * Get a specific Product.
+   * @return Product
+   */
   public function getProduct($product_id) {
     $url = $this->getProductUrl($product_id);
     $json = $this->getGiltJson($url);
     return new Product($json);
   }
 
+  /**
+   * Specify the location of the log file.
+   * If specified API request and responses will be recorded in this file.
+   */
   public function setLogFile($log_file) {
     $this->log_file = $log_file;
   }
@@ -111,6 +156,9 @@ class Gilt {
   }
 }
 
+/**
+ * Base class for Gilt API objects.
+ */
 class GiltData {
 
   private $json;
@@ -129,6 +177,10 @@ class GiltData {
     }
   }
 
+  /**
+   * Get JSON representing this object.
+   * @return string
+   */
   public function getJson() {
     if (!isset($this->json)) {
       $this->json = json_encode($this->obj);
@@ -136,7 +188,7 @@ class GiltData {
     return $this->json;
   }
   
-  public function getObj() {
+  protected function getObj() {
     if (!isset($this->obj)) {
       $this->obj = json_decode($this->json);
     }
@@ -144,6 +196,9 @@ class GiltData {
   }
 }
 
+/**
+ * A set of Sales with implementing ArrayAccess, Iterator, and Countable interfaces. 
+ */
 class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
 
   private $sales;
@@ -165,15 +220,25 @@ class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
     }
   }
 
+  /**
+   * Get an array of Sale objects.
+   * @return array
+   */
   public function getSales() {
     return $this->sales;
   }
 
+  /**
+   * Get a map of store_key => Sales
+   * @return array
+   */
   public function getStores() {
     return $this->stores;
   }
 
-  // ArrayAccess
+  /**
+   * @see http://php.net/manual/en/class.arrayaccess.php
+   */
   public function offsetSet($offset, $value) {
     if (is_null($offset)) {
       $this->sales[] = $value;
@@ -181,40 +246,74 @@ class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
       $this->sales[$offset] = $value;
     }
   }
+
+  /**
+   * @see http://php.net/manual/en/class.arrayaccess.php
+   */
   public function offsetExists($offset) {
     return isset($this->sales[$offset]);
   }
+
+  /**
+   * @see http://php.net/manual/en/class.arrayaccess.php
+   */
   public function offsetUnset($offset) {
     unset($this->sales[$offset]);
   }
+
+  /**
+   * @see http://php.net/manual/en/class.arrayaccess.php
+   */
   public function offsetGet($offset) {
     return isset($this->sales[$offset]) ? $this->sales[$offset] : null;
   }
 
-  // Iterator
+  /**
+   * @see http://www.php.net/manual/en/class.iterator.php
+   */
   public function rewind() {
     reset($this->sales);
   }
+
+  /**
+   * @see http://www.php.net/manual/en/class.iterator.php
+   */
   public function current() {
     return current($this->sales);
   }
+
+  /**
+   * @see http://www.php.net/manual/en/class.iterator.php
+   */
   public function key() {
     return key($this->sales);
   }
+
+  /**
+   * @see http://www.php.net/manual/en/class.iterator.php
+   */
   public function next() {
     return next($this->sales);
   }
+
+  /**
+   * @see http://www.php.net/manual/en/class.iterator.php
+   */
   public function valid() {
     return $this->current() !== false;
   }   
 
-
-  // Countable
+  /**
+   * @see http://us3.php.net/manual/en/class.countable.php 
+   */
   public function count() {
     return count($this->sales);
   }
 }
 
+/**
+ * A Sale.
+ */
 class Sale extends GiltData {
   
   /**
@@ -311,6 +410,9 @@ class Sale extends GiltData {
   
 }
 
+/**
+ * A Product.
+ */
 class Product extends GiltData {
 
   /**
