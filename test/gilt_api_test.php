@@ -52,12 +52,6 @@ class GiltApiTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('https://api.gilt.com/v1/sales/men/test_sale/detail.json?apikey=test_api_key', $url);
   }
 
-  public function test_getSaleUrl_url() {
-    $gilt = new Gilt('test_api_key', null);
-    $url = $gilt->getSaleUrl('https://api.gilt.com/v1/sales/men/test_sale/detail.json');
-    $this->assertEquals('https://api.gilt.com/v1/sales/men/test_sale/detail.json?apikey=test_api_key', $url);
-  }
-
   public function test_getProductUrl_product() {
     $gilt = new Gilt('test_api_key', null);
     $url = $gilt->getProductUrl('00000000');

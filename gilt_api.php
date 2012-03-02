@@ -2,17 +2,17 @@
 /**
  * Gilt API PHP
  *
- * <pre>
+ * <pre
  * $api_key = your_gilt_api_key;
  * $http_get = new HttpGet();
  * $gilt = new Gilt($api_key, $http_get);
  * $sales = $gilt->getActiveSales();
- * </pre>
+ * </pre
  */
 class Gilt {
 
   /**
-   * The version of this lib
+   * The version of this li
    */
   const VERSION = '0.1.0';
 
@@ -27,7 +27,7 @@ class Gilt {
   private $base_url;
   private $http_get;
   private $log_file;
-  
+
   public function __construct($api_key, $http_get, $base_url=Gilt::BASE_URL_V1) {
     $this->api_key = $api_key;
     $this->http_get = $http_get;
@@ -86,7 +86,7 @@ class Gilt {
     $json = $this->getGiltJson($url);
     return new Sales($json);
   }
-  
+
   /**
    * Get upcoming Sales.
    * Optional store_key selects sales for a single store if provided.
@@ -97,7 +97,7 @@ class Gilt {
     $json = $this->getGiltJson($url);
     return new Sales($json);
   }
-  
+
   /**
    * Get a specific Sale.
    * @return Sale
@@ -107,10 +107,10 @@ class Gilt {
     $json = $this->getGiltJson($url);
     return new Sale($json);
   }
-  
+
   /**
    * Get a specific Product.
-   * @return Product
+   * @return Produc
    */
   public function getProduct($product_id) {
     $url = $this->getProductUrl($product_id);
@@ -138,7 +138,7 @@ class Gilt {
     $this->log('RSP: ' . $json);
     return json_decode($json);
   }
-    
+
   protected function buildUrl() {
     $path_els = array_filter(func_get_args());
     $url_pattern = '#' . $this->base_url . '.*\.json#';
@@ -163,7 +163,7 @@ class GiltData {
 
   private $json;
   private $obj;
-  
+
   public function __construct($data) {
     if (is_array($data)) {
       $data = $data[0];
@@ -187,7 +187,7 @@ class GiltData {
     }
     return $this->json;
   }
-  
+
   protected function getObj() {
     if (!isset($this->obj)) {
       $this->obj = json_decode($this->json);
@@ -197,13 +197,13 @@ class GiltData {
 }
 
 /**
- * A set of Sales with implementing ArrayAccess, Iterator, and Countable interfaces. 
+ * A set of Sales with implementing ArrayAccess, Iterator, and Countable interfaces.
  */
 class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
 
   private $sales;
   private $stores;
-  
+
   public function __construct($data) {
     parent::__construct($data);
     $this->sales = array();
@@ -301,10 +301,10 @@ class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
    */
   public function valid() {
     return $this->current() !== false;
-  }   
+  }
 
   /**
-   * @see http://us3.php.net/manual/en/class.countable.php 
+   * @see http://us3.php.net/manual/en/class.countable.php
    */
   public function count() {
     return count($this->sales);
@@ -315,7 +315,7 @@ class Sales extends GiltData implements ArrayAccess, Iterator, Countable {
  * A Sale.
  */
 class Sale extends GiltData {
-  
+
   /**
    * Sale name
    * @var string
@@ -323,16 +323,16 @@ class Sale extends GiltData {
   public function getName() {
     return $this->getObj()->name;
   }
-  
+
   /**
-   * URL to single sale object
+   * URL to single sale objec
    * e.g. "https://api.gilt.com/v1/sales/women/neutrals-794/detail.json"
    * @var string
    */
   public function getSale() {
     return $this->getObj()->sale;
   }
-  
+
   /**
    * unique identifier for sale
    * @var string
@@ -340,7 +340,7 @@ class Sale extends GiltData {
   public function getSaleKey() {
     return $this->getObj()->sale_key;
   }
-  
+
   /**
    * Store key
    * @var string
@@ -348,18 +348,18 @@ class Sale extends GiltData {
   public function getStore() {
     return $this->getObj()->store;
   }
-  
+
   /**
    * A description of the sale's theme or brand (optional)
    * @var string
    */
   public function getDescription() {
-    if (isset($this->getObj()->description)) {
-      return $this->getObj()->description;
+    if (!isset($this->getObj()->description)) {
+      $this->getObj()->description = '';
     }
-    return '';
+    return $this->getObj()->description;
   }
-  
+
   /**
    * Permalink to sale website
    * @var string
@@ -367,7 +367,7 @@ class Sale extends GiltData {
   public function getSaleUrl() {
     return $this->getObj()->sale_url;
   }
-  
+
   /**
    * ISO8601-formatted time for beginning of sale
    * @var string
@@ -375,7 +375,7 @@ class Sale extends GiltData {
   public function getBegins() {
     return $this->getObj()->begins;
   }
-  
+
   /**
    * ISO-8601-formatted time for end of sale (optional)
    * @var string
@@ -383,7 +383,7 @@ class Sale extends GiltData {
   public function getEnds() {
     return $this->getObj()->ends;
   }
-  
+
   /**
    * See image URLs
    * @var array
@@ -396,18 +396,18 @@ class Sale extends GiltData {
     }
     return $image_urls;
   }
-  
+
   /**
    * List of URLs to individual product objects (optional, active sales only)
    * @var array
    */
   public function getProducts() {
-    if (isset($this->getObj()->products)) {
-      return $this->getObj()->products;
+    if (!isset($this->getObj()->products)) {
+      $this->getObj()->products = array();
     }
-    return array();
+    return $this->getObj()->products;
   }
-  
+
 }
 
 /**
@@ -422,9 +422,9 @@ class Product extends GiltData {
   public function getName() {
     return $this->getObj()->name;
   }
-  
+
   /**
-   * URL to product object
+   * URL to product objec
    * @var string
    */
   public function getProduct() {
@@ -432,13 +432,13 @@ class Product extends GiltData {
   }
 
   /**
-   * Unique identifier for product
-   * @var int
+   * Unique identifier for produc
+   * @var in
    */
   public function getId() {
     return $this->getObj()->id;
   }
-  
+
   /**
    * Brand name
    * @var string
@@ -446,7 +446,7 @@ class Product extends GiltData {
   public function getBrand() {
     return $this->getObj()->brand;
   }
-  
+
   /**
    * Link to product detail page where item can be purchased
    * @var string
@@ -454,7 +454,7 @@ class Product extends GiltData {
   public function getUrl() {
     return $this->getObj()->url;
   }
-  
+
   /**
    * See Image URLs
    * @var array
@@ -467,7 +467,7 @@ class Product extends GiltData {
     }
     return $image_urls;
   }
-  
+
   /**
    * See SKUs
    * @var array
@@ -480,7 +480,7 @@ class Product extends GiltData {
     }
     return $skus;
   }
-  
+
   /**
    * An array containing following fields: description, fit_notes, material, care_instructions, origin
    * @var array
@@ -488,12 +488,15 @@ class Product extends GiltData {
   public function getContent() {
     return $this->getObj()->content;
   }
-  
+
   /**
    * Product description (optional)
    * @var string
    */
-  public function getDescription() {    
+  public function getDescription() {
+    if (!isset($this->getObj()->content->description)) {
+      $this->getObj()->content->description = '';
+    }
     return $this->getObj()->content->description;
   }
 
@@ -501,7 +504,10 @@ class Product extends GiltData {
    * Sizing information (optional)
    * @var string
    */
-  public function getFitNotes() {    
+  public function getFitNotes() {
+    if (!isset($this->getObj()->content->fit_notes)) {
+      $this->getObj()->content->fit_notes = '';
+    }
     return $this->getObj()->content->fit_notes;
   }
 
@@ -509,7 +515,10 @@ class Product extends GiltData {
    * Materials list (optional)
    * @var string
    */
-  public function getMaterial() {    
+  public function getMaterial() {
+    if (!isset($this->getObj()->content->material)) {
+      $this->getObj()->content->material = '';
+    }
     return $this->getObj()->content->material;
   }
 
@@ -517,7 +526,10 @@ class Product extends GiltData {
    * Additional care information (optional)
    * @var string
    */
-  public function getCareInstructions() {    
+  public function getCareInstructions() {
+    if (!isset($this->getObj()->content->care_instructions)) {
+      $this->getObj()->content->care_instructions = '';
+    }
     return $this->getObj()->content->care_instructions;
   }
 
@@ -525,7 +537,10 @@ class Product extends GiltData {
    * Place of manufacture (optional)
    * @var string
    */
-  public function getOrigin() {    
+  public function getOrigin() {
+    if (!isset($this->getObj()->content->origin)) {
+      $this->getObj()->content->origin = '';
+    }
     return $this->getObj()->content->origin;
   }
 
@@ -537,35 +552,35 @@ class ImageUrl extends GiltData {
    * The URL to the image
    * @var string
    */
-  public function getUrl() {    
+  public function getUrl() {
     return $this->getObj()->url;
   }
-  
+
   /**
    * The width of the image
-   * @var int
+   * @var in
    */
-  public function getWidth() {    
+  public function getWidth() {
     return $this->getObj()->width;
   }
-  
+
   /**
    * The height of the image
-   * @var int
+   * @var in
    */
-  public function getHeight() {    
+  public function getHeight() {
     return $this->getObj()->height;
   }
 
 }
 
 class Sku extends GiltData {
-  
+
   /**
    * SKU id
-   * @var int
+   * @var in
    */
-  public function getId() {    
+  public function getId() {
     return $this->getObj()->id;
   }
 
@@ -592,9 +607,9 @@ class Sku extends GiltData {
   public function getSalePrice() {
     return $this->getObj()->sale_price;
   }
-  
+
   /**
-   * If absent, standard Gilt.com shipping policy and any resulting charges apply. 
+   * If absent, standard Gilt.com shipping policy and any resulting charges apply.
    * If present, standard shipping charge is overridden by amount listed here in US Dollars.
    * @var string
    */
