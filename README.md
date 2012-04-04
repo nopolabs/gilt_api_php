@@ -14,7 +14,8 @@ PHPUnit 3.4.5+
 
 Documentation
 -------------
-https://dev.gilt.com/
+  * http://nopolabs.github.com/gilt_api_php/
+  * https://dev.gilt.com/
 
 Usage
 -----
