@@ -3,7 +3,7 @@ Gilt API PHP
 
 gilt_api_php provides a PHP client for the Gilt Groupe APIs.
 
-The Gilt Groupe APIs give outside developers with the ability to build applications that display information about Gilt Groupe's upcoming sales and the products available in those sales.
+The Gilt Groupe APIs give developers the ability to build applications that display information about Gilt Groupe's upcoming sales and the products available in those sales.
 
 Requirements
 ------------
