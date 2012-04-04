@@ -28,33 +28,38 @@
 
     <div class="container">
       <section id="main_content">
-        <h3>Welcome to GitHub Pages.</h3>
+        <h3>Gilt API PHP</h3>
+        <p>gilt_api_php provides a PHP client for the Gilt Groupe APIs.</p>
+        <p>The Gilt Groupe APIs give outside developers with the
+        ability to build applications that display information about
+        Gilt Groupe's upcoming sales and the products available in
+        those sales.</p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+        <h4>Requirements</h4>
+        <ul>
+          <li>PHP 5.2.7+</li>
+          <li>PHPUnit 3.4.5+</li>
+        </ul>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+        <hs42>Documentation</hs42>
+        <p><a href="https://dev.gilt.com/">https://dev.gilt.com/</a></p>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+        <h4>Usage</h4>
+        <pre><code>require 'gilt_api.php';
+        require 'lib/http_get.php';
 
-<h3>Designer Templates</h3>
+        $api_key = &lt;your_gilt_api_key&gt;;
+        $http_get = new HttpGet();
+        $gilt = new Gilt($api_key, $http_get);
+        $sales = $gilt-&gt;getActiveSales();
+        </code></pre>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact support@github.com and we’ll help you sort it out.</p>
-      </section>
+        <h4>Demo</h4>
+        <p>The demo PHP app allows browsing of Gilt sales and
+        products.</p>
+        <p>The app was built using the Slim framework and the
+        Twitter bootstrap library.</p>
+        <p>Edit demo/index.php to set your Gilt API key.</p>
     </div>
 
     
